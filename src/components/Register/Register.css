@@ -1,0 +1,19 @@
+.register-container {
+    width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.register-container h2 {
+    text-align: center;
+}
+
+.register-container input,
+.register-container select,
+.register-container button {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+}
