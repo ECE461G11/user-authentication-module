@@ -1,4 +1,4 @@
-import ApiError from '../helpers/apiError';
+import ApiError from '../helpers/ApiError';
 import pick from '../helpers/pick';
 import Joi from 'joi';
 

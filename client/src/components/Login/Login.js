@@ -34,7 +34,7 @@ function Login() {
       setCurrentUser(response.data);
       navigate(DASHBOARD_ROUTE);
     } else {
-      alert(response.errormessage);
+      alert(response?.errormessage);
     }
   }
 
