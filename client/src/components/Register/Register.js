@@ -35,7 +35,7 @@ function Register() {
         navigate(LOGIN_ROUTE);
       }, 1000);
     } else {
-      alert(response.errormessage);
+      alert(response?.errormessage);
     }
   };
 

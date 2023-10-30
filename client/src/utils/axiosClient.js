@@ -25,7 +25,7 @@ export function getRequest(URL, params, navigate) {
     })
     .then((response) => ({ type: 1, response }))
     .catch((error) => {
-      if (error.response.status === 401) {
+      if (error?.response?.status === 401) {
         unAuthorized(navigate);
       }
       const errors = error?.response?.data?.errors;
@@ -48,7 +48,7 @@ export function postRequest(URL, payload, navigate) {
     .then((response) => ({ type: 1, response }))
     .catch((error) => {
       console.log(error.response);
-      if (error.response.status === 401) {
+      if (error?.response?.status === 401) {
         unAuthorized(navigate);
       }
       const errors = error?.response?.data?.errors;
