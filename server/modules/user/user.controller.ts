@@ -3,6 +3,12 @@ import { IUser, UserDB } from '../../models/userModel';
 import { SALT } from '../../helpers/common';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { validatePasswordComplexity, hashPassword } from './user.auth';
+
+/*
+
+*/
+
 
 export const userRegistration = async (req: Request, res: Response): Promise<void> => {
   try {
