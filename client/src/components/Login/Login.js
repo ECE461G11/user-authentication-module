@@ -6,26 +6,6 @@ import { loginUser } from '../../api/userAuth';
 import { setCurrentUser } from '../../utils/localStorage';
 import './Login.css';
 
-const validate = values => {
-  const errors = {};
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  
-  if (values.username.length < 3) {
-    errors.username = 'Username must be at least 3 characters long.';
-  }
-
-  if (values.username.includes(' ')) {
-    errors.username = 'Username must not contain spaces.';
-  }
-
-  if (!passwordRegex.test(values.password)) {
-    errors.password = 'Password must be at least 8 characters long, and contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
-  }
-
-  console.log('Validation errors: ', errors);
-  return errors;
-};
-
 function Login() {
   const navigate = useNavigate();
 
@@ -49,7 +29,6 @@ function Login() {
       username: '',
       password: '',
     },
-    validate,
     onSubmit: async (values) => {
       handleLogin(values);
     },
@@ -67,9 +46,6 @@ function Login() {
           onBlur={formik.handleBlur}
           value={formik.values.username}
         />
-        {formik.touched.username && formik.errors.username ? (
-          <span style={{ color: 'red' }}>{formik.errors.username}</span>
-        ) : null}
 
         <input
           type="password"
@@ -79,10 +55,7 @@ function Login() {
           onBlur={formik.handleBlur}
           value={formik.values.password}
         />
-        {formik.touched.password && formik.errors.password ? (
-          <span style={{ color: 'red' }}>{formik.errors.password}</span>
-        ) : null}
-        
+
         <button type="submit">Login</button>
       </form>
     </div>

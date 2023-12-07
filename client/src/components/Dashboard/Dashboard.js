@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { LOGIN_ROUTE } from '../../helpers/routes';
 import './Dashboard.css';
 import PackageDetails from '../Packages/PackageDetails'; 
+import axios from 'axios';
 
 const dummyPackages = [
     { id: 1, name: 'Package A', dateAdded: '2021-01-01' },
@@ -11,22 +12,48 @@ const dummyPackages = [
 ];
 
 function Dashboard() {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     const navigate = useNavigate();
     const [isUserAuthenticated, setIsUserAuthenticated] = useState(true);
+    const [isAdmin, setIsAdmin] = useState(true);
+    const [showCreateUserForm, setShowCreateUserForm] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [packages, setPackages] = useState(dummyPackages); 
     const [selectedPackage, setSelectedPackage] = useState(null);
     const [sortKey, setSortKey] = useState('name');
-
-    useEffect(() => {
-        const currentUser = getCurrentUser();
-        if (!currentUser || !currentUser.isAdmin) {
-            navigate(LOGIN_ROUTE);
-        } else {
-            setIsUserAuthenticated(true);
+    const [newUsername, setNewUsername] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [isNewUserAdmin, setIsNewUserAdmin] = useState(false);
+    
+    const handleCreateUser = async  (event) => {
+        event.preventDefault();
+        
+        if (newUsername.length < 3){
+            alert('Username must be at least 3 characters long');
+            return;
         }
-    }, [navigate]);
 
+        if (!passwordRegex.test(newPassword)) {
+            alert('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.');
+            return;
+        }
+
+
+            try {
+            const response = await axios.post('/api/users/create', {
+                username: newUsername, 
+                password: newPassword,
+                isAdmin: isNewUserAdmin
+            });
+            console.log(response.data);
+            setNewUsername('');
+            setNewPassword('');
+            setIsNewUserAdmin(false);
+            setShowCreateUserForm(false);
+        } catch (error) {
+            console.error('Error creating user: ', error);
+        }
+    };
     useEffect(() => {
         const sortedPackages = [...packages].sort((a, b) => {
             if (sortKey === 'name') {
@@ -37,7 +64,6 @@ function Dashboard() {
         });
         setPackages(sortedPackages);
     }, [sortKey, packages]);
-
 
 
     const handleFileImport = (event) => {
@@ -58,10 +84,6 @@ function Dashboard() {
     const handlePackageSelect = (pkg) => {
         setSelectedPackage(pkg);
     };
-
-    if (!isUserAuthenticated) {
-        return null;
-    }
 
     return (
         <div className="dashboard-container">
@@ -87,6 +109,44 @@ function Dashboard() {
                     </select>
                 </div>
             </div>
+
+            {isAdmin && (
+                    <button onClick={() => setShowCreateUserForm(true)}>
+                        Create New User
+                    </button>
+                )}
+
+            {showCreateUserForm && (
+                <form onSubmit={handleCreateUser}>
+                    <label>
+                        Username:
+                        <input 
+                            type="text" 
+                            value={newUsername}
+                            onChange={(e) => setNewUsername(e.target.value)}
+                            required 
+                        />
+                    </label>
+                    <label>
+                        Password:
+                        <input 
+                            type="password" 
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required 
+                        />
+                    </label>
+                    <label>
+                        Is Admin:
+                        <input 
+                            type="checkbox" 
+                            checked={isNewUserAdmin}
+                            onChange={(e) => setIsNewUserAdmin(e.target.checked)}
+                        />
+                    </label>
+                    <button type="submit">Create User</button>
+                </form>
+            )}
 
             <div className="package-list">
                 {packages.filter(pkg => pkg.name.includes(searchTerm)).map((pkg) => (
