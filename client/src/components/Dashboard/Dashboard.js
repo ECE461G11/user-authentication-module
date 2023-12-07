@@ -19,9 +19,11 @@ function Dashboard() {
     const [sortKey, setSortKey] = useState('name');
 
     useEffect(() => {
-        if (!getCurrentUser()) {
+        const currentUser = getCurrentUser();
+        if (!currentUser || !currentUser.isAdmin) {
             navigate(LOGIN_ROUTE);
-            setIsUserAuthenticated(false);
+        } else {
+            setIsUserAuthenticated(true);
         }
     }, [navigate]);
 
@@ -35,6 +37,8 @@ function Dashboard() {
         });
         setPackages(sortedPackages);
     }, [sortKey, packages]);
+
+
 
     const handleFileImport = (event) => {
         const file = event.target.files[0];
