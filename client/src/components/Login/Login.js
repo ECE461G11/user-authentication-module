@@ -1,14 +1,15 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import { useNavigate } from 'react-router-dom';
-import { REGISTER_ROUTE, DASHBOARD_ROUTE } from '../../helpers/routes';
+import { DASHBOARD_ROUTE } from '../../helpers/routes';
 import { loginUser } from '../../api/userAuth';
 import { setCurrentUser } from '../../utils/localStorage';
 import './Login.css';
 
 const validate = values => {
   const errors = {};
-
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  
   if (values.username.length < 3) {
     errors.username = 'Username must be at least 3 characters long.';
   }
@@ -17,6 +18,11 @@ const validate = values => {
     errors.username = 'Username must not contain spaces.';
   }
 
+  if (!passwordRegex.test(values.password)) {
+    errors.password = 'Password must be at least 8 characters long, and contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
+  }
+
+  console.log('Validation errors: ', errors);
   return errors;
 };
 
@@ -49,10 +55,6 @@ function Login() {
     },
   });
 
-  const handleRegister = () => {
-    navigate(REGISTER_ROUTE);
-  };
-
   return (
     <div className="login-container">
       <h2>User Authentication Module</h2>
@@ -77,12 +79,12 @@ function Login() {
           onBlur={formik.handleBlur}
           value={formik.values.password}
         />
+        {formik.touched.password && formik.errors.password ? (
+          <span style={{ color: 'red' }}>{formik.errors.password}</span>
+        ) : null}
+        
         <button type="submit">Login</button>
       </form>
-      <div className="register-link">
-        <p>Don't have an account?</p>
-        <button onClick={handleRegister}>Register</button>
-      </div>
     </div>
   );
 }

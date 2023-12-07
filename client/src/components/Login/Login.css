@@ -44,16 +44,3 @@ button {
 button:hover {
     background-color: #45a049;
 }
-
-.register-button {
-    margin-top: 10px;
-    background-color: #4CAF50; 
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.register-button:hover {
-    background-color: #45a049;
-}
