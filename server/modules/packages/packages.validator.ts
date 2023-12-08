@@ -11,12 +11,23 @@ export const createPackageValidation = {
       Content: Joi.string().optional(),
       URL: Joi.string().optional(),
       JSProgram: Joi.string().optional(),
+    }).custom((data) => {
+      const hasContent = data.Content !== undefined && data.Content !== "";
+      const hasURL = data.URL !== undefined && data.URL !== "";
+
+      if ((hasContent && hasURL) || (!hasContent && !hasURL)) {
+        throw new Error("Either Content or URL must be set, but not both.");
+      }
+
+      return data;
     }),
   }),
 };
+const packageQueryValidation = Joi.object().keys({
+  Name: Joi.string().required(),
+  Version: Joi.string().optional(),
+});
 
 export const getPackagesValidation = {
-  body: Joi.object().keys({
-    offset: Joi.string().optional(),
-  }),
+  body: Joi.array().items(packageQueryValidation),
 };

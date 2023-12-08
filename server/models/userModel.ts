@@ -1,16 +1,30 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import { Roles } from '../helpers/common';
+import mongoose, { Schema, Document } from "mongoose";
 
-export interface IUser extends Document {
-  username: string;
-  password: string;
-  role: Roles;
+export interface IUser {
+  name: string;
+  isAdmin: boolean;
 }
 
-const userSchema = new Schema<IUser>({
-  username: { type: String, required: true },
-  password: { type: String, required: true },
-  role: { type: String, required: true, enum: Object.values(Roles) }
+interface IUserAuthenticationInfo {
+  password: string;
+}
+
+export interface IAuthenticationRequest extends Document {
+  User: IUser;
+  Secret: IUserAuthenticationInfo;
+}
+
+const userSchema = new Schema<IAuthenticationRequest>({
+  User: {
+    name: { type: String, required: true, unique: true },
+    isAdmin: { type: Boolean, required: true },
+  },
+  Secret: {
+    password: { type: String, required: true },
+  },
 });
 
-export const UserDB = mongoose.model<IUser>('Users', userSchema);
+export const UserDB = mongoose.model<IAuthenticationRequest>(
+  "Users",
+  userSchema,
+);

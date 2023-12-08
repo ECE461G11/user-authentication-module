@@ -4,6 +4,7 @@ import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 import { UserDB } from "../models/userModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { JWTKey } from "../helpers/common";
 
 export const validate = (schema: any) => (req: any, res: any, next: any) => {
   const validSchema = pick(schema, ["params", "query", "body"]);
@@ -26,6 +27,7 @@ export const validate = (schema: any) => (req: any, res: any, next: any) => {
 interface HeaderOptions {
   requireContentType?: boolean;
   requireToken?: boolean;
+  requireAdminAccess?: boolean;
 }
 
 export const verifyHeaders = (options: HeaderOptions) => {
@@ -38,21 +40,48 @@ export const verifyHeaders = (options: HeaderOptions) => {
     }
 
     if (options.requireToken) {
-      const token = req.headers["x-authorization"];
-      if (!token || Array.isArray(token)) {
+      const header = req.headers["x-authorization"];
+      console.log("Header", header);
+      if (!header || Array.isArray(header)) {
+        return next(
+          new ApiError(
+            401,
+            "Authorization header is missing or incorrect format",
+          ),
+        );
+      }
+
+      const parts = header.split(" ");
+      if (parts.length !== 2 || parts[0] !== "bearer") {
         return next(new ApiError(401, "Invalid token format"));
       }
+      const token = parts[1];
+      console.log("token", token);
 
       try {
         const decoded = jwt.verify(
           token,
-          process.env.JWT_SECRET!,
+          JWTKey.jwtSecret as string,
         ) as JwtPayload;
-        if (typeof decoded === "object" && "username" in decoded) {
-          const username = decoded.username;
-          const existingUser = await UserDB.findOne({ username: username });
+        console.log("decoded", decoded);
+        if (typeof decoded === "object" && "name" in decoded) {
+          const existingUser = await UserDB.findOne({
+            "User.name": decoded.name,
+          });
           if (existingUser) {
-            return next();
+            if (options.requireAdminAccess) {
+              const isAdmin = decoded.isAdmin;
+              if (isAdmin) {
+                return next();
+              } else {
+                res.status(401).json({
+                  message: "User does not have permission for this action",
+                });
+                return;
+              }
+            } else {
+              return next();
+            }
           } else {
             res.status(401).json({ message: "User not found" });
             return;

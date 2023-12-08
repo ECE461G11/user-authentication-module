@@ -1,6 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { IUser } from "./userModel";
+import { Actions } from "../helpers/common";
 
-interface IPackageMetaData {
+interface IPackageMetadata {
   Name: string;
   Version: string;
   ID: string;
@@ -12,6 +14,24 @@ interface IPackageData {
   JSProgram: string;
 }
 
+export interface IPackageHistoryEntry {
+  User: IUser;
+  Date: string;
+  PackageMetadata: IPackageMetadata;
+  Action: Actions;
+}
+
+export interface IPackageRating {
+  RampUp: number;
+  Correctness: number;
+  BusFactor: number;
+  ResponsiveMaintainer: number;
+  LicenseScore: number;
+  GoodPinningPractice: number;
+  PullRequest: number;
+  NetScore: number;
+}
+
 interface IPackageQueryItem {
   Name: string;
   Version: string;
@@ -20,7 +40,7 @@ interface IPackageQueryItem {
 export type IPackageQuery = IPackageQueryItem[];
 
 export interface IPackages extends Document {
-  metadata: IPackageMetaData;
+  metadata: IPackageMetadata;
   data: IPackageData;
 }
 

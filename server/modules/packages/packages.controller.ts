@@ -4,25 +4,47 @@ import {
   IPackageQuery,
   PackagesDB,
 } from "../../models/packagesModel";
+import axios from "axios";
 
-var test: IPackageQuery = [
-  {
-    Name: "Loadash",
-    Version: "1.2.0",
-  },
-  {
-    Name: "Package",
-    Version: "~1.2.0",
-  },
-  {
-    Name: "OtherPackage",
-    Version: "^1.2.0",
-  },
-  {
-    Name: "dummyPackage",
-    Version: "1.2.0-3.20.1",
-  },
-];
+const convertNpmToGitHub = async (npmUrl: string): Promise<string> => {
+  try {
+    const packageNameMatch = npmUrl.match(
+      /^https:\/\/www\.npmjs\.com\/package\/([a-z0-9\-_]+)/i,
+    );
+
+    if (!packageNameMatch || packageNameMatch.length < 2) {
+      throw new Error("Invalid npm URL format.");
+    }
+
+    const packageName = packageNameMatch[1];
+    const npmResponse = await axios.get(
+      `https://registry.npmjs.org/${packageName}`,
+    );
+    const repositoryUrl = npmResponse.data.repository?.url;
+
+    if (!repositoryUrl) {
+      throw new Error("No repository URL found in npm package data.");
+    }
+
+    const githubUrlMatch = repositoryUrl.match(
+      /github\.com\/([a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+)/i,
+    );
+
+    if (!githubUrlMatch || githubUrlMatch.length < 1) {
+      throw new Error(
+        "Invalid GitHub repository URL format in npm package data.",
+      );
+    }
+
+    return `https://${githubUrlMatch[0]}`;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error("An unknown error occurred.");
+    }
+  }
+};
 
 export const createPackage = async (
   req: Request,
@@ -30,6 +52,10 @@ export const createPackage = async (
 ): Promise<void> => {
   try {
     const { metadata, data } = req.body;
+    const debloat = req.query.debloat;
+    if (debloat) {
+      console.log('debloat', debloat);
+    }
 
     if (!metadata) {
       res.status(400).json({ message: "No metadata provided" });
@@ -67,10 +93,9 @@ export const getPackages = async (
     if (!Array.isArray(req.body)) {
       console.error("Request body must be an array");
     }
-
     const packageQueries = req.body as IPackageQuery;
-    const offset = parseInt(req.query.offset as string) || 0;
 
+    const offset = parseInt(req.query.offset as string) || 0;
     const queryFilter = packageQueries.map((query) => ({
       "metadata.Name": query.Name,
       "metadata.Version": query.Version,
@@ -83,9 +108,36 @@ export const getPackages = async (
       .limit(10);
 
     res.header("offset", String(offset + packages.length));
+    console.log("packages", packages);
+    packages.forEach((item) => {
+      console.log("package", item);
+    });
     res.json(packages);
   } catch (error) {
     console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+export const resetRegistry = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const result = await PackagesDB.collection.drop();
+
+    if (result) {
+      res.status(200).json({ message: "Registry is reset." });
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+    if (error instanceof Error && error.message.includes("ns not found")) {
+      res
+        .status(200)
+        .json({ message: "Collection does not exist or already dropped." });
+      return;
+    }
     res.status(500).send("Internal Server Error");
   }
 };
