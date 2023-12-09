@@ -5,6 +5,7 @@ import {
   PackagesDB,
 } from "../../models/packagesModel";
 import axios from "axios";
+import { uploadToS3, downloadFromS3 } from "../../middleware/storagePackage";
 
 const convertNpmToGitHub = async (npmUrl: string): Promise<string> => {
   try {
@@ -53,28 +54,49 @@ export const createPackage = async (
   try {
     const { metadata, data } = req.body;
     const debloat = req.query.debloat;
-    if (debloat) {
-      console.log('debloat', debloat);
-    }
+    console.log("debloat", debloat);
 
-    if (!metadata) {
-      res.status(400).json({ message: "No metadata provided" });
+    if (!metadata || !data) {
+      res.status(400).json({ message: "No metadata or data provided" });
       return;
     }
+
+    const hasContent = data.Content !== undefined && data.Content !== "";
+    const hasURL = data.URL !== undefined && data.URL !== "";
+
+    if ((hasContent && hasURL) || (!hasContent && !hasURL)) {
+      res
+        .status(400)
+        .json({ message: "Either Content or URL must be set, but not both." });
+      return;
+    }
+
     const existingPackage = await PackagesDB.findOne({
       "metadata.ID": metadata.ID,
     });
-    console.log("existingPackage", existingPackage);
+
     if (existingPackage) {
       res.status(403).json({ message: "Package already exists" });
       return;
+    }
+
+    if (hasContent) {
+      const content = data.Content;
+      let buffer = Buffer.from(content, "base64");
+      if (debloat === "true") {
+        const upload = await uploadToS3(buffer, metadata);
+        console.log("upload", upload);
+        const { Key } = upload;
+        const download = await downloadFromS3(Key as string);
+        console.log("download", download);
+      }
     }
 
     const newPackage: IPackages = new PackagesDB({
       metadata,
       data,
     });
-    console.log(newPackage);
+    // console.log(newPackage);
     await newPackage.save();
     res
       .status(201)

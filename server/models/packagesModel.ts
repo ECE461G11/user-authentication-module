@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 import { IUser } from "./userModel";
 import { Actions } from "../helpers/common";
 
-interface IPackageMetadata {
+export interface IPackageMetadata {
   Name: string;
   Version: string;
   ID: string;
