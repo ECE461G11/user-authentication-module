@@ -2,49 +2,52 @@ import { Request, Response } from "express";
 import {
   IPackages,
   IPackageQuery,
+  IPackageRating,
   PackagesDB,
 } from "../../models/packagesModel";
 import axios from "axios";
-import { uploadToS3, downloadFromS3 } from "../../middleware/storagePackage";
+import { uploadToS3 } from "../../middleware/storagePackage";
+import {
+  getBusFactor,
+  getCorrectness,
+  getRampUp,
+  getResponsive,
+  getLicense,
+  getGoodPinningPractice,
+  getPullRequest,
+} from "./ratings.controller";
 
-const convertNpmToGitHub = async (npmUrl: string): Promise<string> => {
-  try {
-    const packageNameMatch = npmUrl.match(
-      /^https:\/\/www\.npmjs\.com\/package\/([a-z0-9\-_]+)/i,
-    );
+export const getPackagesRating = async (
+  repoUrl: string,
+): Promise<IPackageRating> => {
+  const BusFactor = await getBusFactor(repoUrl);
+  const Correctness = await getCorrectness(repoUrl);
+  const RampUp = await getRampUp(repoUrl);
+  const ResponsiveMaintainer = await getResponsive(repoUrl);
+  const LicenseScore = await getLicense(repoUrl);
+  const GoodPinningPractice = await getGoodPinningPractice(repoUrl);
+  const PullRequest = await getPullRequest(repoUrl);
+  console.log("GoodPinningPractice", GoodPinningPractice);
+  console.log("PullRequest", PullRequest);
+  const NetScore =
+    LicenseScore * 0.05 +
+    ResponsiveMaintainer * 0.3 +
+    BusFactor * 0.4 +
+    Correctness * 0.125 +
+    RampUp * 0.125;
 
-    if (!packageNameMatch || packageNameMatch.length < 2) {
-      throw new Error("Invalid npm URL format.");
-    }
+  const packageRating: IPackageRating = {
+    BusFactor,
+    Correctness,
+    RampUp,
+    ResponsiveMaintainer,
+    LicenseScore,
+    GoodPinningPractice,
+    PullRequest,
+    NetScore,
+  };
 
-    const packageName = packageNameMatch[1];
-    const npmResponse = await axios.get(
-      `https://registry.npmjs.org/${packageName}`,
-    );
-    const repositoryUrl = npmResponse.data.repository?.url;
-
-    if (!repositoryUrl) {
-      throw new Error("No repository URL found in npm package data.");
-    }
-
-    const githubUrlMatch = repositoryUrl.match(
-      /github\.com\/([a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+)/i,
-    );
-
-    if (!githubUrlMatch || githubUrlMatch.length < 1) {
-      throw new Error(
-        "Invalid GitHub repository URL format in npm package data.",
-      );
-    }
-
-    return `https://${githubUrlMatch[0]}`;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(error.message);
-    } else {
-      throw new Error("An unknown error occurred.");
-    }
-  }
+  return packageRating;
 };
 
 export const createPackage = async (
@@ -86,9 +89,29 @@ export const createPackage = async (
       if (debloat === "true") {
         const upload = await uploadToS3(buffer, metadata);
         console.log("upload", upload);
-        const { Key } = upload;
-        const download = await downloadFromS3(Key as string);
-        console.log("download", download);
+      }
+    } else if (hasURL) {
+      const ratings = await getPackagesRating(data.URL);
+      console.log("Ratings", ratings);
+      if (
+        ratings.BusFactor >= 0.5 &&
+        ratings.RampUp >= 0.5 &&
+        ratings.Correctness >= 0.5 &&
+        ratings.LicenseScore >= 0.5 &&
+        ratings.ResponsiveMaintainer >= 0.5 &&
+        ratings.NetScore >= 0.5
+      ) {
+        const response = await axios.get(data.URL, {
+          responseType: "arraybuffer",
+        });
+        const buffer = Buffer.from(response.data, "base64");
+        if (debloat === "true") {
+          const upload = await uploadToS3(buffer, metadata);
+          console.log("upload", upload);
+        }
+      } else {
+        res.status(400).json({ message: "Package does not meet the criteria" });
+        return;
       }
     }
 
@@ -96,7 +119,6 @@ export const createPackage = async (
       metadata,
       data,
     });
-    // console.log(newPackage);
     await newPackage.save();
     res
       .status(201)
