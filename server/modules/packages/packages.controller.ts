@@ -82,8 +82,12 @@ export const createPackage = async (
     });
 
     if (existingPackage) {
-      res.status(403).json({ message: "Package already exists" });
-      return;
+      if (metadata.Version !== existingPackage.metadata.Version) {
+        existingPackage.metadata.Version = metadata.Version;
+      } else {
+        res.status(400).json({ message: "Package already exists" });
+        return;
+      }
     }
 
     if (hasContent) {
