@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import PackageDetails from '../Packages/PackageDetails'; 
-import { registerUser, createPackage, getPackageRating, createMultiplePackages, resetAPI } from '../../api/userAuth';
+import { getAllPackage, getPackage, registerUser, createPackage, getPackageRating, createMultiplePackages, resetAPI } from '../../api/userAuth';
 
 
 function Dashboard() {
@@ -27,7 +27,8 @@ function Dashboard() {
 
     const loadPackages = async () => {
         try {
-            const response = await getAllPackage();
+            const params = { limit: 10, offset: 0};
+            const response = await getAllPackage(params, navigate);
             if (response && response.data) {
                 setPackages(response.data);
             }
@@ -47,10 +48,11 @@ function Dashboard() {
         }
     };
 
-    const handlePackageSelect = (pkg) => {
+    const handlePackageSelect = async (pkg) => {
         setSelectedPackage(pkg);
-        fetchPackageDetails(pkg.id);
-        handleRatePackage(pkg.id);
+        const packageQueries = { Name: pkg.name, Version: pkg.version };
+        await fetchPackageDetails(packageQueries);
+        await handleRatePackage(pkg.id);
     };
 
     const handleRatePackage = async (packageId) => {

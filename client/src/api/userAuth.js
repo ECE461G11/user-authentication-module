@@ -1,9 +1,20 @@
 import { postRequest, getRequest } from "../utils/axiosClient";
-import { LOGIN_API, PACKAGE_API, PACKAGES_API, RESET_API, REGISTER_API, AUTHENTICATE_API, PACKAGE_RATE_API } from "../helpers/apiEndpoints";
+import { LOGIN_API, PACKAGE_API, PACKAGES_API, RESET_API, REGISTER_API, AUTHENTICATE_API, PACKAGE_RATE_API, GET_ALL_PACKAGES_API, GET_PACKAGE_API } from "../helpers/apiEndpoints";
 import axios from 'axios';
+import { getCurrentUser } from './localStorage';
 require('dotenv').config();
 axios.get(`${API_URL}/api/user`);
 const API_URL = process.env.BACKEND_URL;
+
+
+export const getAllPackage = async (params, navigate) => {
+  try {
+    const response = await getRequest(GET_ALL_PACKAGES_API, params, navigate);
+    return response.type === 1 ? response.response : null;
+  } catch (error) {
+    console.error('Error getting all packages: ', error);
+  }
+};
 
 export const loginUser = async (payload, navigate) => {
   try {
@@ -14,7 +25,16 @@ export const loginUser = async (payload, navigate) => {
   } catch (error) {
     console.log(error);
   }
-}
+};
+
+export const getPackage = async (packageQueries, offset, navigate) => {
+  try {
+    const response = await postRequest(GET_PACKAGE_API, packageQueries, navigate);
+    return response.type === 1 ? response.response : null;
+  } catch (error) {
+    console.error(`Error getting package details: `, error);
+  }
+};
 
 export const createPackage = async (packageData, navigate) => {
   try {

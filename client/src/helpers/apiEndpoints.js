@@ -15,3 +15,5 @@ export const RESET_API = API_RESET_ROUTE;
 export const REGISTER_API = USER_REGISTER_ROUTE;
 export const AUTHENTICATE_API = USER_AUTHENTICATE_ROUTE;
 export const PACKAGE_RATE_API = PACKAGE_RATE_ROUTE;
+export const GET_ALL_PACKAGES_API = '/get-all-packages';
+export const GET_PACKAGE_API = '/packages/:id';
