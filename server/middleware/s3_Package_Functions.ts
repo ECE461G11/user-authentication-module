@@ -53,3 +53,38 @@ export function downloadFromS3(key: string): Promise<AWS.S3.GetObjectOutput> {
     });
   });
 }
+
+export function clearS3Bucket(): Promise<AWS.S3.DeleteObjectsOutput> {
+  const params: AWS.S3.ListObjectsV2Request = {
+    Bucket: AWSKeys.packagesBucket as string,
+  };
+
+  return new Promise((resolve, reject) => {
+    s3bucket.listObjectsV2(params, (err, data) => {
+      if (err) {
+        console.error("error in listObjectsV2 callback");
+        reject(err);
+      } else {
+        console.log("listObjectsV2 success");
+        console.log("data", data);
+        const deleteParams: AWS.S3.DeleteObjectsRequest = {
+          Bucket: AWSKeys.packagesBucket as string,
+          Delete: {
+            Objects: data.Contents?.map((item) => ({
+              Key: item.Key as string,
+            })) as AWS.S3.ObjectIdentifierList,
+          },
+        };
+        s3bucket.deleteObjects(deleteParams, (err, data) => {
+          if (err) {
+            console.error("error in deleteObjects callback");
+            reject(err);
+          } else {
+            console.log("deleteObjects success");
+            resolve(data);
+          }
+        });
+      }
+    });
+  });
+}

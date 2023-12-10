@@ -13,6 +13,10 @@ export const JWTKey = {
   jwtSecret: process.env.JWT_SECRET,
 };
 
+export const GITHUBKeys = {
+  accessToken: process.env.GITHUB_ACCESS_TOKEN,
+};
+
 export const PORT = process.env.PORT;
 
 export const SALT = process.env.HASH_SALT;
