@@ -38,3 +38,10 @@ export const getPackageRatingValidation = {
     id: Joi.string().required(),
   }),
 };
+
+export const getAllPackagesValidation = {
+  query: Joi.object().keys({
+    limit: Joi.number().optional(),
+    offset: Joi.number().optional(),
+  }),
+};

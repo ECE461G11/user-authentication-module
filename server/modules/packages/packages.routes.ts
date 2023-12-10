@@ -4,11 +4,13 @@ import {
   getPackages,
   resetRegistry,
   getPackageRating,
+  getAllPackage,
 } from "./packages.controller";
 import {
   createPackageValidation,
   getPackagesValidation,
   getPackageRatingValidation,
+  getAllPackagesValidation,
 } from "./packages.validator";
 import { validate, verifyHeaders } from "../../middleware/validate";
 
@@ -26,6 +28,13 @@ router.post(
   verifyHeaders({ requireContentType: true, requireToken: true }),
   validate(getPackagesValidation),
   getPackages,
+);
+
+router.get(
+  "/get-all-packages",
+  verifyHeaders({ requireToken: true }),
+  validate(getAllPackagesValidation),
+  getAllPackage,
 );
 
 router.get(
