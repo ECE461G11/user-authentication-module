@@ -1,4 +1,4 @@
-import { postRequest } from "../utils/axiosClient";
+import { postRequest, getRequest } from "../utils/axiosClient";
 import { LOGIN_API, PACKAGE_API, PACKAGES_API, RESET_API, REGISTER_API, AUTHENTICATE_API, PACKAGE_RATE_API } from "../helpers/apiEndpoints";
 import axios from 'axios';
 require('dotenv').config();
