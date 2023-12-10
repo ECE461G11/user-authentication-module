@@ -372,9 +372,10 @@ async function fetchDependencies(repoUrl: string) {
   }
   const packageJson = response.data;
   console.log("packageJson", packageJson);
-  return Object.entries(packageJson.dependencies || {}).map(
-    ([name, version]) => ({ name, version }),
-  );
+  return Object.entries({
+    ...packageJson.dependencies,
+    ...packageJson.devDependencies,
+  }).map(([name, version]) => ({ name, version }));
 }
 
 function isPinnedToMajorMinor(version: string) {

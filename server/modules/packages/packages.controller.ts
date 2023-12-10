@@ -185,3 +185,32 @@ export const resetRegistry = async (
     res.status(500).send("Internal Server Error");
   }
 };
+
+export const getPackageRating = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({ message: "No package ID provided" });
+      return;
+    }
+
+    const existingPackage = await PackagesDB.findOne({
+      "metadata.ID": id,
+    });
+
+    if (!existingPackage) {
+      res.status(404).json({ message: "Package does not exist" });
+      return;
+    }
+
+    res.status(200).json(existingPackage.metrics);
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};

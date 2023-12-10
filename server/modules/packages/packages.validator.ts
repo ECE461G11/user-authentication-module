@@ -23,6 +23,7 @@ export const createPackageValidation = {
     }),
   }),
 };
+
 const packageQueryValidation = Joi.object().keys({
   Name: Joi.string().required(),
   Version: Joi.string().optional(),
@@ -30,4 +31,10 @@ const packageQueryValidation = Joi.object().keys({
 
 export const getPackagesValidation = {
   body: Joi.array().items(packageQueryValidation),
+};
+
+export const getPackageRatingValidation = {
+  params: Joi.object().keys({
+    id: Joi.string().required(),
+  }),
 };
