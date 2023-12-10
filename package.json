@@ -1,7 +1,7 @@
 {
   "scripts": {
     "client": "cd client && npm install && npm start",
-    "server": "cd server && npm install && nodemon --watch 'src/**/*.ts' --exec 'ts-node' index.ts",
+    "server": "cd server && npm install && nodemon index.ts",
     "start": "concurrently \"npm run server\" \"npm run client\""
   },
   "devDependencies": {
