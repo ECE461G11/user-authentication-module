@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
   IPackages,
   IPackageQuery,
@@ -6,7 +6,10 @@ import {
   PackagesDB,
 } from "../../models/packagesModel";
 import axios from "axios";
-import { uploadToS3 } from "../../middleware/storagePackage";
+import {
+  uploadToS3,
+  clearS3Bucket,
+} from "../../middleware/s3_Package_Functions";
 import {
   getBusFactor,
   getCorrectness,
@@ -132,6 +135,7 @@ export const createPackage = async (
 export const getPackages = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     if (!Array.isArray(req.body)) {
@@ -163,17 +167,13 @@ export const getPackages = async (
   }
 };
 
-export const resetRegistry = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const resetRegistry = async (res: Response): Promise<void> => {
   try {
-    const result = await PackagesDB.collection.drop();
+    await PackagesDB.collection.drop();
+    await clearS3Bucket();
 
-    if (result) {
-      res.status(200).json({ message: "Registry is reset." });
-      return;
-    }
+    res.status(200).json({ message: "Registry is reset." });
+    next();
   } catch (error) {
     console.error(error);
     if (error instanceof Error && error.message.includes("ns not found")) {
@@ -189,6 +189,7 @@ export const resetRegistry = async (
 export const getPackageRating = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -208,7 +209,7 @@ export const getPackageRating = async (
     }
 
     res.status(200).json(existingPackage.metrics);
-    return;
+    next();
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
