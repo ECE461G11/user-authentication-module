@@ -4,11 +4,14 @@ import {
   getPackages,
   resetRegistry,
   getPackageRating,
+  getPackage,
+  updateVersion,
 } from "./packages.controller";
 import {
   createPackageValidation,
   getPackagesValidation,
   getPackageRatingValidation,
+  getPackageValidation,
 } from "./packages.validator";
 import { validate, verifyHeaders } from "../../middleware/validate";
 
@@ -34,6 +37,31 @@ router.get(
   validate(getPackageRatingValidation),
   getPackageRating,
 );
+
+/* /package/{id}:
+get:
+  parameters:
+  - name: id
+    description: ID of package to fetch
+    schema:
+      $ref: '#/components/schemas/PackageID'
+    in: path
+    required: true */
+
+router.get(
+  "/package/:id",
+  verifyHeaders({ requireToken: true }),
+  validate(getPackageValidation),
+  getPackage,
+);
+
+router.put(
+  "/package/:id",
+  verifyHeaders({ requireContentType: true }),
+  validate(getPackageValidation),
+  updateVersion,
+)
+
 
 router.delete("/reset", verifyHeaders({ requireToken: true }), resetRegistry);
 

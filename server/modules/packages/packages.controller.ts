@@ -186,6 +186,7 @@ export const resetRegistry = async (res: Response): Promise<void> => {
   }
 };
 
+
 export const getPackageRating = async (
   req: Request,
   res: Response,
@@ -208,10 +209,80 @@ export const getPackageRating = async (
       return;
     }
 
-    res.status(200).json(existingPackage.metrics);
     next();
+    res.status(200).json(existingPackage.metrics);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
+
+export const getPackage = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({ message: "No package ID provided" });
+      return;
+    }
+
+    const existingPackage = await PackagesDB.findOne({
+      "metadata.ID": id,
+    });
+
+    if (!existingPackage) {
+      res.status(404).json({ message: "Package does not exist" });
+      return;
+    }
+    //const key = `${existingPackage.metadata.ID}-${existingPackage.metadata.Name}-${existingPackage.metadata.Version}.zip`;
+    
+    res.status(200).json(existingPackage);
+    return existingPackage;
+    //next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
+export const updateVersion = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { metadata, data } = req.body;
+
+    if (!id) {
+      res.status(400).json({ message: "No package ID provided" });
+      return;
+    }
+
+    if (!metadata || !data) {
+      res.status(400).json({ message: "No metadata or data provided" });
+      return;
+    }
+
+    const existingPackage = await PackagesDB.findOne({
+      "metadata.ID": id,
+    });
+
+    if (!existingPackage) {
+      res.status(404).json({ message: "Package does not exist" });
+      return;
+    }
+
+    existingPackage.metadata = metadata;
+    existingPackage.data = data;
+    await existingPackage.save();
+
+    res.status(200).json({ message: "Package updated successfully" });
+    //next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+}

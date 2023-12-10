@@ -13,7 +13,7 @@ export function uploadToS3(
 ): Promise<AWS.S3.ManagedUpload.SendData> {
   const params: AWS.S3.PutObjectRequest = {
     Bucket: AWSKeys.packagesBucket as string,
-    Key: `${Date.now()}-${metadata.Name}-${metadata.Version}.zip`,
+    Key: `${metadata.ID}-${metadata.Name}-${metadata.Version}.zip`,
     Body: buffer,
     Metadata: {
       Name: metadata.Name as string,
