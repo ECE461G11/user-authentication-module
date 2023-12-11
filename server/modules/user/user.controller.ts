@@ -1,66 +1,89 @@
-import { Request, Response } from 'express';
-import { IUser, UserDB } from '../../models/userModel';
-import { SALT } from '../../helpers/common';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import { Request, Response } from "express";
+import { IUser, IAuthenticationRequest, UserDB } from "../../models/userModel";
+import { SALT, JWTKey } from "../../helpers/common";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
-export const userRegistration = async (req: Request, res: Response): Promise<void> => {
+export const userAuthentication = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
-    const { username, password, role } = req.body;
-    
-    if (!username || !password || !role) {
-      res.status(400).json({ message: 'Username, password and role are required' });
+    const { User, Secret } = req.body as IAuthenticationRequest;
+    if (!User || !Secret) {
+      res.status(400).json({
+        message:
+          "There is missing field(s) in the AuthenticationRequest or it is formed improperly.",
+      });
       return;
     }
 
-    const existingUser = await UserDB.findOne({ username });
-    if (existingUser) {
-      res.status(400).json({ message: 'User already exists' });
+    const existingUser = await UserDB.findOne({ "User.name": User.name });
+    if (!existingUser) {
+      res.status(401).json({ message: "The user or password is invalid." });
       return;
     }
 
-    const salt = await bcrypt.genSalt(parseInt(SALT!));
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const isPasswordValid = await bcrypt.compare(
+      Secret.password,
+      existingUser.Secret.password,
+    );
+    if (!isPasswordValid) {
+      res.status(401).json({ message: "The user or password is invalid." });
+      return;
+    }
 
-    const newUser: IUser = new UserDB({
-      username,
-      password: hashedPassword,
-      role: role as any
-    });
+    const token = jwt.sign(
+      {
+        sub: existingUser._id,
+        name: existingUser.User.name,
+        isAdmin: existingUser.User.isAdmin,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 60 * (10 * 60),
+      },
+      JWTKey.jwtSecret as string,
+    );
 
-    await newUser.save();
-    res.status(201).json({ message: 'User registered successfully', user: { username: newUser.username, role: newUser.role } });
+    res.status(200).json({ value: `bearer ${token}` });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).send("Internal Server Error");
   }
 };
 
-export const userLogin = async (req: Request, res: Response): Promise<void> => {
+export const userRegistration = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
-    const { username, password } = req.body;
+    const { User, Secret } = req.body as IAuthenticationRequest;
 
-    if (!username || !password) {
-      res.status(400).json({ message: 'Username and password are required' });
+    if (!User || !Secret || !User.name || !Secret.password) {
+      res.status(400).json({
+        message: "Missing fields in the registration request.",
+      });
       return;
     }
 
-    const existingUser = await UserDB.findOne({ username });
-    if (!existingUser) {
-      res.status(400).json({ message: 'User does not exist' });
+    const existingUser = await UserDB.findOne({ "User.name": User.name });
+    if (existingUser) {
+      res.status(409).json({ message: "User already exists." });
       return;
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
-    if (!isPasswordCorrect) {
-      res.status(400).json({ message: 'Authentication failed, invalid credentials' });
-      return;
-    }
+    const salt = await bcrypt.genSalt(parseInt(SALT as string));
+    const hashedPassword = await bcrypt.hash(Secret.password, salt);
 
-    const token = jwt.sign({ username: existingUser.username, role: existingUser.role }, process.env.JWT_SECRET!, { expiresIn: '1h' });
-    res.status(200).json({ message: 'User logged in successfully', user: { username: existingUser.username, role: existingUser.role }, token });
+    const newUser = new UserDB({
+      User,
+      Secret: { password: hashedPassword },
+    });
+
+    await newUser.save();
+
+    res.status(201).json({ message: "User registered successfully." });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).send("Internal Server Error");
   }
-}
+};
