@@ -1,16 +1,19 @@
 import express from "express";
 import {
   createPackage,
-  getPackages,
+  getPackagesByQuery,
   resetRegistry,
   getPackageRating,
-  getAllPackage,
+  getAllPackages,
+  getPackageByID,
+  updateVersionByID,
 } from "./packages.controller";
 import {
   createPackageValidation,
   getPackagesValidation,
   getPackageRatingValidation,
   getAllPackagesValidation,
+  getPackageValidation,
 } from "./packages.validator";
 import { validate, verifyHeaders } from "../../middleware/validate";
 
@@ -27,14 +30,14 @@ router.post(
   "/packages",
   verifyHeaders({ requireContentType: true, requireToken: true }),
   validate(getPackagesValidation),
-  getPackages,
+  getPackagesByQuery,
 );
 
 router.get(
   "/get-all-packages",
   verifyHeaders({ requireToken: true }),
   validate(getAllPackagesValidation),
-  getAllPackage,
+  getAllPackages,
 );
 
 router.get(
@@ -43,6 +46,31 @@ router.get(
   validate(getPackageRatingValidation),
   getPackageRating,
 );
+
+/* /package/{id}:
+get:
+  parameters:
+  - name: id
+    description: ID of package to fetch
+    schema:
+      $ref: '#/components/schemas/PackageID'
+    in: path
+    required: true */
+
+router.get(
+  "/package/:id",
+  verifyHeaders({ requireToken: true }),
+  validate(getPackageValidation),
+  getPackageByID,
+);
+
+router.put(
+  "/package/:id",
+  verifyHeaders({ requireContentType: true }),
+  validate(getPackageValidation),
+  updateVersionByID,
+)
+
 
 router.delete("/reset", verifyHeaders({ requireToken: true }), resetRegistry);
 

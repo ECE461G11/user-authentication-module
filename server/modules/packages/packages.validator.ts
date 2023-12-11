@@ -43,5 +43,11 @@ export const getAllPackagesValidation = {
   query: Joi.object().keys({
     limit: Joi.number().optional(),
     offset: Joi.number().optional(),
+  })
+};
+
+export const getPackageValidation = {
+  params: Joi.object().keys({
+    id: Joi.string().required(),
   }),
 };
