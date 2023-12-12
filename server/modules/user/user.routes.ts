@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post(
   "/register",
-  verifyHeaders({ requireToken: true, requireAdminAccess: true }),
+  // verifyHeaders({ requireToken: true, requireAdminAccess: true }),
   validate(register),
   userRegistration,
 );
