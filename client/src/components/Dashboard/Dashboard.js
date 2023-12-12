@@ -35,8 +35,8 @@ function Dashboard() {
     try {
       const params = { limit: 10, offset: 0 };
       const response = await getAllPackage(params, navigate);
-      if (response && response.data) {
-        setPackages(response.data);
+      if (response) {
+        setPackages(response);
       }
     } catch (error) {
       console.error("Error loading packages: ", error);
@@ -134,6 +134,27 @@ function Dashboard() {
         </div>
       </div>
 
+      <div className="packages-list-header">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Version</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {packages?.map((pkg) => (
+              <tr key={pkg._id}>
+                <td>{pkg?.metadata?.Name}</td>
+                <td>{pkg?.metadata?.Version}</td>
+                <td>{pkg?.metadata?.ID}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       {isAdmin && (
         <button onClick={() => setShowCreateUserForm(true)}>
           Create New User
@@ -174,7 +195,7 @@ function Dashboard() {
 
       <div className="package-list">
         {packages
-          .filter((pkg) => pkg.name.includes(searchTerm))
+          .filter((pkg) => pkg?.name?.includes(searchTerm))
           .map((pkg) => (
             <div
               key={pkg.id}

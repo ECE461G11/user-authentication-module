@@ -18,7 +18,7 @@ import {
 export const getAllPackage = async (params, navigate) => {
   try {
     const response = await getRequest(GET_ALL_PACKAGES_API, params, navigate);
-    return response.type === 1 ? response.response : null;
+    return response.type === 1 ? response.response.data : null;
   } catch (error) {
     console.error("Error getting all packages: ", error);
   }
