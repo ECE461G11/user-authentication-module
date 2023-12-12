@@ -1,11 +1,7 @@
 import { postRequest, getRequest } from "../utils/axiosClient";
 import { LOGIN_API, PACKAGE_API, PACKAGES_API, RESET_API, REGISTER_API, AUTHENTICATE_API, PACKAGE_RATE_API, GET_ALL_PACKAGES_API, GET_PACKAGE_API } from "../helpers/apiEndpoints";
-import axios from 'axios';
-import { getCurrentUser } from './localStorage';
-require('dotenv').config();
-axios.get(`${API_URL}/api/user`);
-const API_URL = process.env.BACKEND_URL;
 
+const API_URL = process.env.BACKEND_URL;
 
 export const getAllPackage = async (params, navigate) => {
   try {
