@@ -82,8 +82,12 @@ export const createPackage = async (
     });
 
     if (existingPackage) {
-      res.status(403).json({ message: "Package already exists" });
-      return;
+      if (metadata.Version !== existingPackage.metadata.Version) {
+        existingPackage.metadata.Version = metadata.Version;
+      } else {
+        res.status(400).json({ message: "Package already exists" });
+        return;
+      }
     }
 
     if (hasContent) {
@@ -132,7 +136,7 @@ export const createPackage = async (
   }
 };
 
-export const getPackages = async (
+export const getPackagesByQuery = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
@@ -184,7 +188,7 @@ export const resetRegistry = async (res: Response): Promise<void> => {
   }
 };
 
-export const getAllPackage = async (
+export const getAllPackages = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
@@ -220,10 +224,77 @@ export const getPackageRating = async (
       res.status(404).json({ message: "Package does not exist" });
       return;
     }
-
     res.status(200).json(existingPackage.metrics);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
+
+export const getPackageByID = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({ message: "No package ID provided" });
+      return;
+    }
+
+    const existingPackage = await PackagesDB.findOne({
+      "metadata.ID": id,
+    });
+
+    if (!existingPackage) {
+      res.status(404).json({ message: "Package does not exist" });
+      return;
+    }
+    //const key = `${existingPackage.metadata.ID}-${existingPackage.metadata.Name}-${existingPackage.metadata.Version}.zip`;
+    
+    res.status(200).json(existingPackage);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
+export const updateVersionByID = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { metadata, data } = req.body;
+
+    if (!id) {
+      res.status(400).json({ message: "No package ID provided" });
+      return;
+    }
+
+    if (!metadata || !data) {
+      res.status(400).json({ message: "No metadata or data provided" });
+      return;
+    }
+
+    const existingPackage = await PackagesDB.findOne({
+      "metadata.ID": id,
+    });
+
+    if (!existingPackage) {
+      res.status(404).json({ message: "Package does not exist" });
+      return;
+    }
+
+    existingPackage.metadata = metadata;
+    existingPackage.data = data;
+    await existingPackage.save();
+
+    res.status(200).json({ message: "Package updated successfully" });
+    //next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+}
