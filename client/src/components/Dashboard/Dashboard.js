@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getCurrentUser } from '../../utils/localStorage';
 import { useNavigate } from 'react-router-dom';
-import { LOGIN_ROUTE } from '../../helpers/routes';
 import './Dashboard.css';
 import PackageDetails from '../Packages/PackageDetails'; 
-import axios from 'axios';
+import { getAllPackage, getPackage, registerUser, createPackage, getPackageRating, createMultiplePackages, resetAPI } from '../../api/userAuth';
 
-const dummyPackages = [
-    { id: 1, name: 'Package A', dateAdded: '2021-01-01' },
-    { id: 2, name: 'Package B', dateAdded: '2021-02-01' },
-];
 
 function Dashboard() {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -18,13 +12,56 @@ function Dashboard() {
     const [isAdmin, setIsAdmin] = useState(true);
     const [showCreateUserForm, setShowCreateUserForm] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-    const [packages, setPackages] = useState(dummyPackages); 
+    const [packages, setPackages] = useState([]); 
     const [selectedPackage, setSelectedPackage] = useState(null);
     const [sortKey, setSortKey] = useState('name');
     const [newUsername, setNewUsername] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [isNewUserAdmin, setIsNewUserAdmin] = useState(false);
+
+
     
+    useEffect(() => {
+        loadPackages();
+    }, []);
+
+    const loadPackages = async () => {
+        try {
+            const params = { limit: 10, offset: 0};
+            const response = await getAllPackage(params, navigate);
+            if (response && response.data) {
+                setPackages(response.data);
+            }
+        } catch (error) {
+            console.error('Error loading packages: ', error);
+        }
+    };
+
+    const fetchPackageDetails = async (packageId) => {
+        try {
+            const response = await getPackage(packageId);
+            if (response && response.data) {
+                setSelectedPackage(response.data);
+            }
+        }  catch (error) {
+            console.error(`Error fetching details for package ${packageId}: `, error);
+        }
+    };
+
+    const handlePackageSelect = async (pkg) => {
+        setSelectedPackage(pkg);
+        const packageQueries = { Name: pkg.name, Version: pkg.version };
+        await fetchPackageDetails(packageQueries);
+        await handleRatePackage(pkg.id);
+    };
+
+    const handleRatePackage = async (packageId) => {
+        try {
+            const rating = await getPackageRating(packageId);
+        } catch (error) {
+            console.error('Error getting rating: ', error);
+        }
+    };
     const handleCreateUser = async  (event) => {
         event.preventDefault();
         
@@ -40,12 +77,12 @@ function Dashboard() {
 
 
             try {
-            const response = await axios.post('/api/users/create', {
+            const userData = {
                 username: newUsername, 
                 password: newPassword,
                 isAdmin: isNewUserAdmin
-            });
-            console.log(response.data);
+            };
+            await registerUser(userData);
             setNewUsername('');
             setNewPassword('');
             setIsNewUserAdmin(false);
@@ -54,35 +91,16 @@ function Dashboard() {
             console.error('Error creating user: ', error);
         }
     };
-    useEffect(() => {
-        const sortedPackages = [...packages].sort((a, b) => {
-            if (sortKey === 'name') {
-                return a.name.localeCompare(b.name);
-            } else {
-                return new Date(a.dateAdded) - new Date(b.dateAdded);
-            }
-        });
-        setPackages(sortedPackages);
-    }, [sortKey, packages]);
 
-
-    const handleFileImport = (event) => {
+    const handleFileImport = async (event) => {
         const file = event.target.files[0];
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
             const packageData = JSON.parse(event.target.result);
-            const newPackage = {
-                id: packages.length + 1,
-                name: packageData.name,
-                dateAdded: new Date().toISOString().slice(0, 10),
-            };
+            const newPackage = await createPackage(packageData);
             setPackages([...packages, newPackage]);
         };
         reader.readAsText(file);
-    };
-    
-    const handlePackageSelect = (pkg) => {
-        setSelectedPackage(pkg);
     };
 
     return (
