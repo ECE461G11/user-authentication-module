@@ -38,7 +38,7 @@ artifacts:
     #- client/public/index.html
     #- client/src/index.js
 
-name: build-$(date +%m.%Y.%d)
+  name: 'my-artifact'
     
 cache:
   paths:
