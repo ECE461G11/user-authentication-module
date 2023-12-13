@@ -43,3 +43,5 @@ cache:
     - 'node_modules/**/*'
     #- 'client/node_modules/**/*'
     - 'server/node_modules/**/*'
+
+name: build-$(date +%m.%Y.%d)
