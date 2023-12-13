@@ -1,0 +1,42 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - npm install -g typescript
+      - npm install
+
+  pre_build:
+    commands:
+      - echo Build started on `date`
+      - echo Compiling the Node.js code...
+
+  build:
+    commands:
+      - npm run build # This command should be defined in your package.json and generate the dist folder
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+
+artifacts:
+  enable-symlinks: true
+  files:
+    - client/dist/**/*
+    - server/dist/**/*
+    - package.json
+    - package-lock.json
+    - server/package.json
+    - server/package-lock.json
+    - client/package.json
+    - client/package-lock.json
+    - client/public/index.html
+    - client/src/index.js
+    
+cache:
+  paths:
+    - 'node_modules/**/*'
+    - 'client/node_modules/**/*'
+    - 'server/node_modules/**/*'
