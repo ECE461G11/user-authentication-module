@@ -33,6 +33,8 @@ artifacts:
     - package-lock.json
     - server/package.json
     - server/package-lock.json
+    - server/.env
+    - .env
     #- client/package.json
     #- client/package-lock.json
     #- client/public/index.html
