@@ -8,6 +8,7 @@ phases:
       - npm install -g typescript
       - npm install -g concurrently
       - npm install
+      - npm run install_server_client_dep
 
   pre_build:
     commands:
