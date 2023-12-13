@@ -39,7 +39,7 @@ artifacts:
     #- client/src/index.js
 
   name: 'my-artifact'
-    
+     
 cache:
   paths:
     - 'node_modules/**/*'
