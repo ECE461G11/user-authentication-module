@@ -33,5 +33,6 @@ jobs:
         echo "${{ secrets.PROD_ENV_FILE }}" > .env
         
     - run: npm install
-    - run: npm run build
+    
+    - run: cd server && npm run build
     #- run: npm test
