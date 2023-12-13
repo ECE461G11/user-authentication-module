@@ -1,5 +1,8 @@
 {
   "scripts": {
+    "client_build": "cd client && npm run build",
+    "server_build": "cd server && npm run build",
+    "build": "concurrently \"npm run client_build\" \"npm run server build\"",
     "client": "cd client && npm install && npm start",
     "server": "cd server && npm install && nodemon index.ts",
     "start": "concurrently \"npm run server\" \"npm run client\""
