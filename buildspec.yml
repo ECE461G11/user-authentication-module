@@ -37,6 +37,8 @@ artifacts:
     #- client/package-lock.json
     #- client/public/index.html
     #- client/src/index.js
+
+name: build-$(date +%m.%Y.%d)
     
 cache:
   paths:
@@ -44,4 +46,4 @@ cache:
     #- 'client/node_modules/**/*'
     - 'server/node_modules/**/*'
 
-name: build-$(date +%m.%Y.%d)
+
