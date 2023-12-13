@@ -15,26 +15,24 @@ app.use(express.json());
 app.use("/", userRouter);
 app.use("/", packageRouter);
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+mongoose
+  .connect(
+    MONGO.mongoURI as string,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    } as any,
+  )
+  .then(() => {
+    console.log("MongoDB connected!");
 
-// mongoose
-//   .connect(
-//     MONGO.mongoURI as string,
-//     {
-//       useNewUrlParser: true,
-//       useUnifiedTopology: true,
-//     } as any,
-//   )
-//   .then(() => {
-//     console.log("MongoDB connected!");
-
-
-//   })
-//   .catch((err) => {
-//     console.error("MongoDB connection error:", err);
-//   });
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
