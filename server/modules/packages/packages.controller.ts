@@ -160,7 +160,7 @@ export const getPackagesByQuery = async (
     res.json(packages);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    // res.status(500).send("Internal Server Error");
   }
 };
 
@@ -178,7 +178,7 @@ export const resetRegistry = async (res: Response): Promise<void> => {
         .json({ message: "Collection does not exist or already dropped." });
       return;
     }
-    res.status(500).send("Internal Server Error");
+    // res.status(500).send("Internal Server Error");
   }
 };
 
