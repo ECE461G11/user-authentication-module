@@ -10,6 +10,8 @@ export const userAuthentication = async (
 ): Promise<void> => {
   try {
     const { User, Secret } = req.body as IAuthenticationRequest;
+    console.log("User", User);
+    console.log("Secret", Secret);
     if (!User || !Secret) {
       res.status(400).json({
         message:
@@ -19,6 +21,7 @@ export const userAuthentication = async (
     }
 
     const existingUser = await UserDB.findOne({ "User.name": User.name });
+    console.log("existingUser", existingUser);
     if (!existingUser) {
       res.status(401).json({ message: "The user or password is invalid." });
       return;
@@ -28,6 +31,7 @@ export const userAuthentication = async (
       Secret.password,
       existingUser.Secret.password,
     );
+    console.log("isPasswordValid", isPasswordValid);
     if (!isPasswordValid) {
       res.status(401).json({ message: "The user or password is invalid." });
       return;
@@ -44,7 +48,7 @@ export const userAuthentication = async (
       JWTKey.jwtSecret as string,
     );
 
-    res.status(200).json('"bearer ' + token + '"');
+    res.status(200).json(`bearer ${token}`);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");

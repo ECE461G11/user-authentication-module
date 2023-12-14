@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import {
   IPackages,
   IPackageQuery,
@@ -160,11 +160,14 @@ export const getPackagesByQuery = async (
     res.json(packages);
   } catch (error) {
     console.error(error);
-    // res.status(500).send("Internal Server Error");
+    res.status(500).send("Internal Server Error");
   }
 };
 
-export const resetRegistry = async (res: Response): Promise<void> => {
+export const resetRegistry = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     await PackagesDB.collection.drop();
     await clearS3Bucket();
@@ -177,8 +180,9 @@ export const resetRegistry = async (res: Response): Promise<void> => {
         .status(200)
         .json({ message: "Collection does not exist or already dropped." });
       return;
+    } else {
+      res.status(500).send("Internal Server Error");
     }
-    // res.status(500).send("Internal Server Error");
   }
 };
 
