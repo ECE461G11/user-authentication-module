@@ -52,7 +52,7 @@ export const verifyHeaders = (options: HeaderOptions) => {
         );
       }
       header = header.replace(/["']/g, "");
-      console.log("Cleaned header", header");
+      console.log("Cleaned header", header);
       const parts = header.split(" ");
       if (parts.length !== 2 || parts[0] !== "bearer") {
         return next(new ApiError(401, "Invalid token format"));
