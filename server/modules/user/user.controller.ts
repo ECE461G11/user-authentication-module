@@ -44,7 +44,7 @@ export const userAuthentication = async (
       JWTKey.jwtSecret as string,
     );
 
-    res.status(200).json({ value: `bearer ${token}` });
+    res.status(200).json(`bearer ${token}`);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
