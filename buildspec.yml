@@ -13,6 +13,7 @@ phases:
 
   pre_build:
     commands:
+      - ulimit -n 2048
       - echo Build started on `date`
       - echo Compiling the Node.js code...
 
