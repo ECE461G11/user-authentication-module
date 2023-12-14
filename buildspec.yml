@@ -8,13 +8,13 @@ phases:
       - npm install -g typescript
       - npm install -g concurrently
       - npm install
-      - npm run client_install
+      - cd client && react-scripts build
       - npm run server_install
 
   pre_build:
     commands:
-      - npm cache clean --force
-      - ulimit -n 2048
+      #- npm cache clean --force
+      #- ulimit -n 2048
       - echo Build started on `date`
       - echo Compiling the Node.js code...
 
