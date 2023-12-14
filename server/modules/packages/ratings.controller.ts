@@ -24,7 +24,7 @@ function calculateBusFactor(contributors: Contributor[]): number {
     (sum, contributor) => sum + contributor.contributionCount,
     0,
   );
-  const threshold = totalContributions * 0.6;
+  const threshold = totalContributions * 0.8;
   let countedContributions = 0;
   let majorContributorCount = 0;
 

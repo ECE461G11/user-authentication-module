@@ -12,6 +12,12 @@ app.use(cors());
 const port = process.env.PORT || 8000;
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log(`Received request to ${req.originalUrl}`);
+  next();
+});
+
 app.use("/", userRouter);
 app.use("/", packageRouter);
 
@@ -33,7 +39,3 @@ mongoose
   .catch((err) => {
     console.error("MongoDB connection error:", err);
   });
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!");
-});
