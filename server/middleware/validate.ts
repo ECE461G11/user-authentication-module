@@ -40,7 +40,8 @@ export const verifyHeaders = (options: HeaderOptions) => {
     }
 
     if (options.requireToken) {
-      const header = req.headers["x-authorization"];
+      const header =
+        req.headers.authorization || req["headers"]["x-authorization"];
       console.log("Header", header);
       if (!header || Array.isArray(header)) {
         return next(

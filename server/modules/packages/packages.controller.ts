@@ -59,8 +59,6 @@ export const createPackage = async (
 ): Promise<void> => {
   try {
     const { metadata, data } = req.body;
-    const debloat = req.query.debloat;
-    console.log("debloat", debloat);
 
     if (!metadata || !data) {
       res.status(400).json({ message: "No metadata or data provided" });
@@ -93,10 +91,8 @@ export const createPackage = async (
     if (hasContent) {
       const content = data.Content;
       let buffer = Buffer.from(content, "base64");
-      if (debloat === "true") {
-        const upload = await uploadToS3(buffer, metadata);
-        console.log("upload", upload);
-      }
+      const upload = await uploadToS3(buffer, metadata);
+      console.log("upload", upload);
     } else if (hasURL) {
       const ratings = await getPackagesRating(data.URL);
       console.log("Ratings", ratings);
@@ -112,10 +108,8 @@ export const createPackage = async (
           responseType: "arraybuffer",
         });
         const buffer = Buffer.from(response.data, "base64");
-        if (debloat === "true") {
-          const upload = await uploadToS3(buffer, metadata);
-          console.log("upload", upload);
-        }
+        const upload = await uploadToS3(buffer, metadata);
+        console.log("upload", upload);
       } else {
         res.status(400).json({ message: "Package does not meet the criteria" });
         return;
@@ -252,13 +246,13 @@ export const getPackageByID = async (
       return;
     }
     //const key = `${existingPackage.metadata.ID}-${existingPackage.metadata.Name}-${existingPackage.metadata.Version}.zip`;
-    
+
     res.status(200).json(existingPackage);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
-}
+};
 
 export const updateVersionByID = async (
   req: Request,
@@ -297,4 +291,4 @@ export const updateVersionByID = async (
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
-}
+};
