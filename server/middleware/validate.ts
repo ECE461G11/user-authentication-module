@@ -40,7 +40,7 @@ export const verifyHeaders = (options: HeaderOptions) => {
     }
 
     if (options.requireToken) {
-      const header =
+      let header =
         req.headers.authorization || req["headers"]["x-authorization"];
       console.log("Header", header);
       if (!header || Array.isArray(header)) {
@@ -51,7 +51,8 @@ export const verifyHeaders = (options: HeaderOptions) => {
           ),
         );
       }
-
+      header = header.replace(/["']/g, "");
+      console.log("Cleaned header", header");
       const parts = header.split(" ");
       if (parts.length !== 2 || parts[0] !== "bearer") {
         return next(new ApiError(401, "Invalid token format"));
