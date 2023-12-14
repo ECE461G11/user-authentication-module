@@ -60,6 +60,9 @@ export const createPackage = async (
   try {
     const { metadata, data } = req.body;
 
+    console.log("metadata", metadata);
+    console.log("data", data);
+
     if (!metadata || !data) {
       res.status(400).json({ message: "No metadata or data provided" });
       return;
@@ -67,6 +70,9 @@ export const createPackage = async (
 
     const hasContent = data.Content !== undefined && data.Content !== "";
     const hasURL = data.URL !== undefined && data.URL !== "";
+
+    console.log("hasContent", hasContent);
+    console.log("hasURL", hasURL);
 
     if ((hasContent && hasURL) || (!hasContent && !hasURL)) {
       res
@@ -78,6 +84,8 @@ export const createPackage = async (
     const existingPackage = await PackagesDB.findOne({
       "metadata.ID": metadata.ID,
     });
+
+    console.log("existingPackage", existingPackage);
 
     if (existingPackage) {
       if (metadata.Version !== existingPackage.metadata.Version) {
@@ -139,6 +147,8 @@ export const getPackagesByQuery = async (
       console.error("Request body must be an array");
     }
     const packageQueries = req.body as IPackageQuery;
+
+    console.log("packageQueries", packageQueries);
 
     const offset = parseInt(req.query.offset as string) || 0;
     const queryFilter = packageQueries.map((query) => ({
@@ -303,6 +313,8 @@ export const getPackagesByRegEx = async (
 ): Promise<void> => {
   try {
     const { RegEx } = req.body;
+
+    console.log("RegEx", RegEx);
 
     if (!RegEx) {
       res.status(400).json({ message: "No regular expression provided" });
