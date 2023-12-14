@@ -26,6 +26,8 @@ function Dashboard() {
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isNewUserAdmin, setIsNewUserAdmin] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [packageToDelete, setPackageToDelete] = useState(null);
 
   useEffect(() => {
     loadPackages();
@@ -53,14 +55,29 @@ function Dashboard() {
   //     console.error(`Error fetching details for package ${packageId}: `, error);
   //   }
   // };
+  const handleResetRegistry = async () => {
+    try {
+      const response = await resetAPI(navigate);
+      if (response) {
+        console.log("Registry reset");
+        setPackages([]);
+      }
+    } catch (error) {
+      console.error("Error resetting registry: ", error);
+    }
+  };
 
   const handlePackageSelect = async (pkg) => {
     setSelectedPackage(pkg);
     const packageQueries = { Name: pkg.name, Version: pkg.version };
+    setPackageToDelete(pkg);
     // await fetchPackageDetails(packageQueries);
     // await handleRatePackage(pkg.id);
   };
 
+  const deletePackage = async () => {
+    setShowDeleteConfirm(false);
+  };
   // const handleRatePackage = async (packageId) => {
   //   try {
   //     const rating = await getPackageRating(packageId);
@@ -156,9 +173,12 @@ function Dashboard() {
       </div>
 
       {isAdmin && (
-        <button onClick={() => setShowCreateUserForm(true)}>
-          Create New User
-        </button>
+        <>
+          <button onClick={() => setShowCreateUserForm(!showCreateUserForm)}>
+            {showCreateUserForm ? "Close" : "Create New User"}
+          </button>
+          <button onClick={handleResetRegistry}>Reset Registry</button>
+        </>
       )}
 
       {showCreateUserForm && (
@@ -192,7 +212,13 @@ function Dashboard() {
           <button type="submit">Create User</button>
         </form>
       )}
-
+      {showDeleteConfirm && (
+        <div>
+          <p>Are you sure you want to delete {packageToDelete.name}?</p>
+          <button onClick={deletePackage}>Yes</button>
+          <button onClick={() => setShowDeleteConfirm(false)}>No</button>
+        </div>
+      )}
       <div className="package-list">
         {packages
           .filter((pkg) => pkg?.name?.includes(searchTerm))

@@ -58,9 +58,10 @@ button:hover, #import-package:hover {
 }
 
 .package-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
 }
 
 .package-item {
@@ -68,6 +69,13 @@ button:hover, #import-package:hover {
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.package-item:hover {
+    transform: scale(1.05);
+    background-color: #f0f0f0;
+    cursor: pointer;
 }
 
 .rating-container, .package-details-container {

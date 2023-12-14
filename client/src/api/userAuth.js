@@ -2,12 +2,9 @@ import {
   postRequest,
   getRequest,
   putRequest,
-  deleteRequest,
 } from "../utils/axiosClient";
 import {
   LOGIN_API,
-  CREATE_PACKAGE_API,
-  QUERY_PACKAGES_API,
   RESET_REGISTRY_API,
   REGISTER_API,
   GET_ALL_PACKAGES_API,
