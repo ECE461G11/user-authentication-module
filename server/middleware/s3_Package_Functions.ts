@@ -54,7 +54,7 @@ export function downloadFromS3(key: string): Promise<AWS.S3.GetObjectOutput> {
   });
 }
 
-export function clearS3Bucket(): Promise<AWS.S3.DeleteObjectsOutput> {
+export function clearS3Bucket(): Promise<void> {
   const params: AWS.S3.ListObjectsV2Request = {
     Bucket: AWSKeys.packagesBucket as string,
   };
@@ -62,29 +62,47 @@ export function clearS3Bucket(): Promise<AWS.S3.DeleteObjectsOutput> {
   return new Promise((resolve, reject) => {
     s3bucket.listObjectsV2(params, (err, data) => {
       if (err) {
-        console.error("error in listObjectsV2 callback");
+        console.error("error in listObjectsV2 callback", err);
         reject(err);
-      } else {
-        console.log("listObjectsV2 success");
-        console.log("data", data);
+        return;
+      }
+
+      console.log("listObjectsV2 success");
+      if (!data.Contents || data.Contents.length === 0) {
+        console.log("No objects to delete");
+        resolve();
+        return;
+      }
+
+      const objectsToDelete = data.Contents.filter((item) => item.Key).map(
+        (item) => ({ Key: item.Key as string }),
+      );
+
+      if (objectsToDelete.length === 0) {
+        console.log("No valid keys found for deletion");
+        resolve();
+        return;
+      }
+
+      while (objectsToDelete.length) {
+        const batchToDelete = objectsToDelete.splice(0, 1000);
         const deleteParams: AWS.S3.DeleteObjectsRequest = {
           Bucket: AWSKeys.packagesBucket as string,
           Delete: {
-            Objects: data.Contents?.map((item) => ({
-              Key: item.Key as string,
-            })) as AWS.S3.ObjectIdentifierList,
+            Objects: batchToDelete,
           },
         };
+
         s3bucket.deleteObjects(deleteParams, (err, data) => {
           if (err) {
-            console.error("error in deleteObjects callback");
+            console.error("error in deleteObjects callback", err);
             reject(err);
-          } else {
-            console.log("deleteObjects success");
-            resolve(data);
+            return;
           }
+          console.log("deleteObjects success", data);
         });
       }
+      resolve();
     });
   });
 }
