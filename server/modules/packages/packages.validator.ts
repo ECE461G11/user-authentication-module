@@ -24,6 +24,15 @@ export const createPackageValidation = {
   }),
 };
 
+export const getPackageByRegexpValidation = Joi.object({
+  RegEx: Joi.string()
+    .required()
+    .pattern(new RegExp("your-regex-pattern"))
+    .messages({
+      "string.pattern.base": `Invalid regular expression format`,
+    }),
+});
+
 const packageQueryValidation = Joi.object().keys({
   Name: Joi.string().required(),
   Version: Joi.string().optional(),
@@ -43,7 +52,7 @@ export const getAllPackagesValidation = {
   query: Joi.object().keys({
     limit: Joi.number().optional(),
     offset: Joi.number().optional(),
-  })
+  }),
 };
 
 export const getPackageValidation = {

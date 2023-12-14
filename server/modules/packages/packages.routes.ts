@@ -7,6 +7,7 @@ import {
   getAllPackages,
   getPackageByID,
   updateVersionByID,
+  getPackageByRegEx,
 } from "./packages.controller";
 import {
   createPackageValidation,
@@ -14,6 +15,7 @@ import {
   getPackageRatingValidation,
   getAllPackagesValidation,
   getPackageValidation,
+  getPackageByRegexpValidation,
 } from "./packages.validator";
 import { validate, verifyHeaders } from "../../middleware/validate";
 
@@ -69,7 +71,14 @@ router.put(
   verifyHeaders({ requireContentType: true }),
   validate(getPackageValidation),
   updateVersionByID,
-)
+);
+
+router.post(
+  "/package/byRegEx",
+  verifyHeaders({ requireContentType: true, requireToken: true }),
+  validate(getPackageByRegexpValidation),
+  getPackageByRegEx,
+);
 
 
 router.delete("/reset", verifyHeaders({ requireToken: true }), resetRegistry);
