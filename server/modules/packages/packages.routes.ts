@@ -77,7 +77,7 @@ router.post(
   "/package/byRegEx",
   verifyHeaders({ requireContentType: true, requireToken: true }),
   validate(getPackageByRegexpValidation),
-  getPackageByRegEx,
+  getPackagesByRegEx,
 );
 
 
