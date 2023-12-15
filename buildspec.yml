@@ -7,9 +7,11 @@ phases:
     commands:
       - npm install -g typescript
       - npm install -g concurrently
+      - npm install -g yarn
       - npm install
       - npm ci
-      - npm run client_install
+      - cd client && yarn
+      #- npm run client_install
       - npm run server_install
 
   pre_build:
