@@ -96,11 +96,11 @@ export function clearS3Bucket(): Promise<void> {
 
         s3bucket.deleteObjects(deleteParams, (err, data) => {
           if (err) {
-            logger.error("error in deleteObjects callback", err);
+            logger.error("error in deleteObjects callback", { err });
             reject(err);
             return;
           }
-          logger.info("deleteObjects success", data);
+          logger.info("deleteObjects success", { data });
         });
       }
       resolve();

@@ -43,7 +43,7 @@ export const verifyHeaders = (options: HeaderOptions) => {
     if (options.requireToken) {
       let header =
         req.headers.authorization || req["headers"]["x-authorization"];
-      logger.info("Header", header);
+        logger.info("Header", { header });
       if (!header || Array.isArray(header)) {
         return next(
           new ApiError(
@@ -53,20 +53,20 @@ export const verifyHeaders = (options: HeaderOptions) => {
         );
       }
       header = header.replace(/["']/g, "");
-      logger.info("Cleaned header", header);
+      logger.info("Cleaned header", { header });
       const parts = header.split(" ");
       if (parts.length !== 2 || parts[0] !== "bearer") {
         return next(new ApiError(401, "Invalid token format"));
       }
       const token = parts[1];
-      logger.info("token", token);
+      logger.info("token", { token });
 
       try {
         const decoded = jwt.verify(
           token,
           JWTKey.jwtSecret as string,
         ) as JwtPayload;
-        logger.info("decoded", decoded);
+        logger.info("decoded", { decoded });
         if (typeof decoded === "object" && "name" in decoded) {
           const existingUser = await UserDB.findOne({
             "User.name": decoded.name,

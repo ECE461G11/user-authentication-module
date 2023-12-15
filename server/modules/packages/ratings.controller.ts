@@ -372,7 +372,7 @@ async function fetchDependencies(repoUrl: string) {
     return [];
   }
   const packageJson = response.data;
-  logger.info("packageJson", packageJson);
+  logger.info("packageJson", { packageJson });
   return Object.entries({
     ...packageJson.dependencies,
     ...packageJson.devDependencies,
@@ -386,13 +386,13 @@ function isPinnedToMajorMinor(version: string) {
 
 export async function getGoodPinningPractice(repoUrl: string) {
   const dependencies = await fetchDependencies(repoUrl);
-  logger.info("dependencies", dependencies);
+  logger.info("dependencies", { dependencies });
   if (dependencies.length === 0) return 1.0;
 
   const pinnedDependencies = dependencies.filter((dep) =>
     isPinnedToMajorMinor(dep.version as string),
   );
-  logger.info("pinnedDependencies", pinnedDependencies);
+  logger.info("pinnedDependencies", { pinnedDependencies });
   return pinnedDependencies.length / dependencies.length;
 }
 

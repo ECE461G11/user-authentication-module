@@ -31,8 +31,8 @@ export const getPackagesRating = async (
   const LicenseScore = await getLicense(repoUrl);
   const GoodPinningPractice = await getGoodPinningPractice(repoUrl);
   const PullRequest = await getPullRequest(repoUrl);
-  logger.info("GoodPinningPractice", GoodPinningPractice);
-  logger.info("PullRequest", PullRequest);
+  logger.info("GoodPinningPractice", { GoodPinningPractice });
+  logger.info("PullRequest", { PullRequest });
   const NetScore =
     LicenseScore * 0.05 +
     ResponsiveMaintainer * 0.3 +
@@ -61,8 +61,8 @@ export const createPackage = async (
   try {
     const { metadata, data } = req.body;
 
-    logger.info("metadata", metadata);
-    logger.info("data", data);
+    logger.info("metadata", { metadata });
+    logger.info("data", { data });
 
     if (!metadata || !data) {
       res.status(400).json({ message: "No metadata or data provided" });
@@ -72,8 +72,8 @@ export const createPackage = async (
     const hasContent = data.Content !== undefined && data.Content !== "";
     const hasURL = data.URL !== undefined && data.URL !== "";
 
-    logger.info("hasContent", hasContent);
-    logger.info("hasURL", hasURL);
+    logger.info("hasContent", { hasContent });
+    logger.info("hasURL", { hasURL });
 
     if ((hasContent && hasURL) || (!hasContent && !hasURL)) {
       res
@@ -86,7 +86,7 @@ export const createPackage = async (
       "metadata.ID": metadata.ID,
     });
 
-    logger.info("existingPackage", existingPackage);
+    logger.info("existingPackage", { existingPackage });
 
     if (existingPackage) {
       if (metadata.Version !== existingPackage.metadata.Version) {
@@ -101,10 +101,10 @@ export const createPackage = async (
       const content = data.Content;
       let buffer = Buffer.from(content, "base64");
       const upload = await uploadToS3(buffer, metadata);
-      logger.info("upload", upload);
+      logger.info("upload",{ upload });
     } else if (hasURL) {
       const ratings = await getPackagesRating(data.URL);
-      logger.info("Ratings", ratings);
+      logger.info("Ratings", { ratings });
       if (
         ratings.BusFactor >= 0.5 &&
         ratings.RampUp >= 0.5 &&
@@ -118,7 +118,7 @@ export const createPackage = async (
         });
         const buffer = Buffer.from(response.data, "base64");
         const upload = await uploadToS3(buffer, metadata);
-        logger.info("upload", upload);
+        logger.info("upload", { upload });
       } else {
         res.status(400).json({ message: "Package does not meet the criteria" });
         return;
@@ -149,7 +149,7 @@ export const getPackagesByQuery = async (
     }
     const packageQueries = req.body as IPackageQuery;
 
-    logger.info("packageQueries", packageQueries);
+    logger.info("packageQueries", { packageQueries });
 
     const offset = parseInt(req.query.offset as string) || 0;
     const queryFilter = packageQueries.map((query) => ({
@@ -164,9 +164,9 @@ export const getPackagesByQuery = async (
       .limit(10);
 
     res.header("offset", String(offset + packages.length));
-    logger.info("packages", packages);
+    logger.info("packages", { packages });
     packages.forEach((item) => {
-      logger.info("package", item);
+      logger.info("package", { item });
     });
     res.json(packages);
   } catch (error) {
@@ -315,7 +315,7 @@ export const getPackagesByRegEx = async (
   try {
     const { RegEx } = req.body;
 
-    logger.info("RegEx", RegEx);
+    logger.info("RegEx", { RegEx });
 
     if (!RegEx) {
       res.status(400).json({ message: "No regular expression provided" });
