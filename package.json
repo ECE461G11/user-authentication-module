@@ -3,7 +3,7 @@
     "client_install": "cd client && npm install --maxsockets=5",
     "server_install": "cd server && npm install",
     "install_server_client_dep": "concurrently \"npm run client_install\" \"npm run server_install\"",
-    "client_build": "cd client && npm run build",
+    "client_build": "cd client && yarn",
     "server_build": "cd server && npm run build",
     "build": "concurrently \"npm run client_build\" \"npm run server_build\"",
     "client": "cd client && npm install && npm start",
