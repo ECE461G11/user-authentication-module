@@ -10,10 +10,10 @@ phases:
       - npm install -g yarn
       - npm install
       - npm ci
+      - npm run server_install
       - cd client && yarn
       #- npm run client_install
-      - npm run server_install
-
+      
   pre_build:
     commands:
       - npm cache clean --force
