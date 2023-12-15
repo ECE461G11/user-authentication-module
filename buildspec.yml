@@ -20,7 +20,7 @@ phases:
 
   build:
     commands:
-      - npm run build # This command should be defined in your package.json and generate the dist folder
+      - npm run server_build # This command should be defined in your package.json and generate the dist folder
 
   post_build:
     commands:
