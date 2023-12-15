@@ -8,7 +8,7 @@ phases:
       - npm install -g typescript
       - npm install -g concurrently
       - npm install
-      - cd client && react-scripts build
+      #- cd client && react-scripts build
       - npm run server_install
 
   pre_build:
@@ -29,24 +29,27 @@ phases:
 artifacts:
   enable-symlinks: true
   files:
-    - client/dist/**/*
+    #- client/dist/**/*
     - server/dist/**/*
     - package.json
     - package-lock.json
     - server/package.json
     - server/package-lock.json
     - server/.env
-    - client/package.json
-    - client/package-lock.json
-    - client/public/index.html
-    - client/src/index.js
+    - node_modules/**/*
+    - server/node_modules/**/*
+    # - client/node_modules/**/*
+    #- client/package.json
+    #- client/package-lock.json
+    #- client/public/index.html
+    #- client/src/index.js
 
   name: 'my-artifact'
      
-cache:
-  paths:
-    - 'node_modules/**/*'
-    - 'client/node_modules/**/*'
-    - 'server/node_modules/**/*' 
+# cache:
+#   paths:
+#     - 'node_modules/**/*'
+#     - 'client/node_modules/**/*'
+#     - 'server/node_modules/**/*' 
 
 
