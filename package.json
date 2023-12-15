@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "client_install": "cd client && npm install",
+    "client_install": "cd client && npm install --maxsockets=5",
     "server_install": "cd server && npm install",
     "install_server_client_dep": "concurrently \"npm run client_install\" \"npm run server_install\"",
     "client_build": "cd client && npm run build",
