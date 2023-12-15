@@ -5,6 +5,7 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
+      - echo fs.file-max=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p 
       - npm install -g typescript
       - npm install -g concurrently
       - npm install
