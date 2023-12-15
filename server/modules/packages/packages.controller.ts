@@ -19,6 +19,7 @@ import {
   getGoodPinningPractice,
   getPullRequest,
 } from "./ratings.controller";
+import logger from "../../logger";
 
 export const getPackagesRating = async (
   repoUrl: string,
@@ -30,8 +31,8 @@ export const getPackagesRating = async (
   const LicenseScore = await getLicense(repoUrl);
   const GoodPinningPractice = await getGoodPinningPractice(repoUrl);
   const PullRequest = await getPullRequest(repoUrl);
-  console.log("GoodPinningPractice", GoodPinningPractice);
-  console.log("PullRequest", PullRequest);
+  logger.info("GoodPinningPractice", GoodPinningPractice);
+  logger.info("PullRequest", PullRequest);
   const NetScore =
     LicenseScore * 0.05 +
     ResponsiveMaintainer * 0.3 +
@@ -60,8 +61,8 @@ export const createPackage = async (
   try {
     const { metadata, data } = req.body;
 
-    console.log("metadata", metadata);
-    console.log("data", data);
+    logger.info("metadata", metadata);
+    logger.info("data", data);
 
     if (!metadata || !data) {
       res.status(400).json({ message: "No metadata or data provided" });
@@ -71,8 +72,8 @@ export const createPackage = async (
     const hasContent = data.Content !== undefined && data.Content !== "";
     const hasURL = data.URL !== undefined && data.URL !== "";
 
-    console.log("hasContent", hasContent);
-    console.log("hasURL", hasURL);
+    logger.info("hasContent", hasContent);
+    logger.info("hasURL", hasURL);
 
     if ((hasContent && hasURL) || (!hasContent && !hasURL)) {
       res
@@ -85,7 +86,7 @@ export const createPackage = async (
       "metadata.ID": metadata.ID,
     });
 
-    console.log("existingPackage", existingPackage);
+    logger.info("existingPackage", existingPackage);
 
     if (existingPackage) {
       if (metadata.Version !== existingPackage.metadata.Version) {
@@ -100,10 +101,10 @@ export const createPackage = async (
       const content = data.Content;
       let buffer = Buffer.from(content, "base64");
       const upload = await uploadToS3(buffer, metadata);
-      console.log("upload", upload);
+      logger.info("upload", upload);
     } else if (hasURL) {
       const ratings = await getPackagesRating(data.URL);
-      console.log("Ratings", ratings);
+      logger.info("Ratings", ratings);
       if (
         ratings.BusFactor >= 0.5 &&
         ratings.RampUp >= 0.5 &&
@@ -117,7 +118,7 @@ export const createPackage = async (
         });
         const buffer = Buffer.from(response.data, "base64");
         const upload = await uploadToS3(buffer, metadata);
-        console.log("upload", upload);
+        logger.info("upload", upload);
       } else {
         res.status(400).json({ message: "Package does not meet the criteria" });
         return;
@@ -134,7 +135,7 @@ export const createPackage = async (
       .json({ metadata, message: "Package data created successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
-    console.error(error);
+    logger.error(error);
   }
 };
 
@@ -144,11 +145,11 @@ export const getPackagesByQuery = async (
 ): Promise<void> => {
   try {
     if (!Array.isArray(req.body)) {
-      console.error("Request body must be an array");
+      logger.error("Request body must be an array");
     }
     const packageQueries = req.body as IPackageQuery;
 
-    console.log("packageQueries", packageQueries);
+    logger.info("packageQueries", packageQueries);
 
     const offset = parseInt(req.query.offset as string) || 0;
     const queryFilter = packageQueries.map((query) => ({
@@ -163,13 +164,13 @@ export const getPackagesByQuery = async (
       .limit(10);
 
     res.header("offset", String(offset + packages.length));
-    console.log("packages", packages);
+    logger.info("packages", packages);
     packages.forEach((item) => {
-      console.log("package", item);
+      logger.info("package", item);
     });
     res.json(packages);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -184,7 +185,7 @@ export const resetRegistry = async (
 
     res.status(200).json({ message: "Registry is reset." });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     if (error instanceof Error && error.message.includes("ns not found")) {
       res
         .status(200)
@@ -207,7 +208,7 @@ export const getAllPackages = async (
     res.header("offset", String(offset + packages.length));
     res.json(packages);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -234,7 +235,7 @@ export const getPackageRating = async (
     }
     res.status(200).json(existingPackage.metrics);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -263,7 +264,7 @@ export const getPackageByID = async (
 
     res.status(200).json(existingPackage);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -302,7 +303,7 @@ export const updateVersionByID = async (
     res.status(200).json({ message: "Package updated successfully" });
     //next();
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -314,7 +315,7 @@ export const getPackagesByRegEx = async (
   try {
     const { RegEx } = req.body;
 
-    console.log("RegEx", RegEx);
+    logger.info("RegEx", RegEx);
 
     if (!RegEx) {
       res.status(400).json({ message: "No regular expression provided" });
@@ -335,7 +336,7 @@ export const getPackagesByRegEx = async (
 
     res.status(200).json(matchingPackages);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).send("Internal Server Error");
   }
 };

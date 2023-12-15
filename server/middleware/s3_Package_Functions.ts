@@ -1,6 +1,7 @@
 import * as AWS from "aws-sdk";
 import { AWSKeys } from "../helpers/common";
 import { IPackageMetadata } from "../models/packagesModel";
+import logger from "../logger";
 
 const s3bucket = new AWS.S3({
   accessKeyId: AWSKeys.accessKey,
@@ -25,10 +26,10 @@ export function uploadToS3(
   return new Promise((resolve, reject) => {
     s3bucket.upload(params, (err, data) => {
       if (err) {
-        console.error("error in upload callback");
+        logger.error("error in upload callback");
         reject(err);
       } else {
-        console.log("Upload success");
+        logger.info("Upload success");
         resolve(data);
       }
     });
@@ -44,10 +45,10 @@ export function downloadFromS3(key: string): Promise<AWS.S3.GetObjectOutput> {
   return new Promise((resolve, reject) => {
     s3bucket.getObject(params, (err, data) => {
       if (err) {
-        console.error("error in download callback");
+        logger.error("error in download callback");
         reject(err);
       } else {
-        console.log("Download success");
+        logger.info("Download success");
         resolve(data);
       }
     });
@@ -62,14 +63,14 @@ export function clearS3Bucket(): Promise<void> {
   return new Promise((resolve, reject) => {
     s3bucket.listObjectsV2(params, (err, data) => {
       if (err) {
-        console.error("error in listObjectsV2 callback", err);
+        logger.error("error in listObjectsV2 callback", err);
         reject(err);
         return;
       }
 
-      console.log("listObjectsV2 success");
+      logger.info("listObjectsV2 success");
       if (!data.Contents || data.Contents.length === 0) {
-        console.log("No objects to delete");
+        logger.info("No objects to delete");
         resolve();
         return;
       }
@@ -79,7 +80,7 @@ export function clearS3Bucket(): Promise<void> {
       );
 
       if (objectsToDelete.length === 0) {
-        console.log("No valid keys found for deletion");
+        logger.info("No valid keys found for deletion");
         resolve();
         return;
       }
@@ -95,11 +96,11 @@ export function clearS3Bucket(): Promise<void> {
 
         s3bucket.deleteObjects(deleteParams, (err, data) => {
           if (err) {
-            console.error("error in deleteObjects callback", err);
+            logger.error("error in deleteObjects callback", err);
             reject(err);
             return;
           }
-          console.log("deleteObjects success", data);
+          logger.info("deleteObjects success", data);
         });
       }
       resolve();

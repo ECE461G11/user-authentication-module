@@ -5,6 +5,7 @@ import { Request, Response, NextFunction } from "express";
 import { UserDB } from "../models/userModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWTKey } from "../helpers/common";
+import logger from "../logger";
 
 export const validate = (schema: any) => (req: any, res: any, next: any) => {
   const validSchema = pick(schema, ["params", "query", "body"]);
@@ -42,7 +43,7 @@ export const verifyHeaders = (options: HeaderOptions) => {
     if (options.requireToken) {
       let header =
         req.headers.authorization || req["headers"]["x-authorization"];
-      console.log("Header", header);
+      logger.info("Header", header);
       if (!header || Array.isArray(header)) {
         return next(
           new ApiError(
@@ -52,20 +53,20 @@ export const verifyHeaders = (options: HeaderOptions) => {
         );
       }
       header = header.replace(/["']/g, "");
-      console.log("Cleaned header", header);
+      logger.info("Cleaned header", header);
       const parts = header.split(" ");
       if (parts.length !== 2 || parts[0] !== "bearer") {
         return next(new ApiError(401, "Invalid token format"));
       }
       const token = parts[1];
-      console.log("token", token);
+      logger.info("token", token);
 
       try {
         const decoded = jwt.verify(
           token,
           JWTKey.jwtSecret as string,
         ) as JwtPayload;
-        console.log("decoded", decoded);
+        logger.info("decoded", decoded);
         if (typeof decoded === "object" && "name" in decoded) {
           const existingUser = await UserDB.findOne({
             "User.name": decoded.name,

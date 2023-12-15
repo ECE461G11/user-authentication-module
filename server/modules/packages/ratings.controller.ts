@@ -5,6 +5,7 @@ import http from "isomorphic-git/http/node";
 import fs from "fs";
 import path from "path";
 import { dir as tmpDir } from "tmp-promise";
+import logger from "../../logger";
 
 // Bus Factor
 interface Contributor {
@@ -46,7 +47,7 @@ export async function getBusFactor(repoUrl: string): Promise<number> {
   const repoMatch = repoUrl.match(/github\.com\/([\w-]+\/[\w-]+)/);
 
   if (!repoMatch || repoMatch.length < 2) {
-    console.error(`Invalid GitHub repository URL: ${repoUrl}`);
+    logger.error(`Invalid GitHub repository URL: ${repoUrl}`);
     process.exit(1);
   }
 
@@ -61,7 +62,7 @@ export async function getBusFactor(repoUrl: string): Promise<number> {
   });
 
   if (response.status !== 200) {
-    console.error(`Failed to fetch data: ${response.statusText}`);
+    logger.error(`Failed to fetch data: ${response.statusText}`);
     process.exit(1);
   }
 
@@ -69,7 +70,7 @@ export async function getBusFactor(repoUrl: string): Promise<number> {
   try {
     contributors = await response.data;
   } catch (error: any) {
-    console.error(`Error parsing response: ${error.message}`);
+    logger.error(`Error parsing response: ${error.message}`);
     process.exit(1);
   }
 
@@ -77,7 +78,7 @@ export async function getBusFactor(repoUrl: string): Promise<number> {
     !Array.isArray(contributors) ||
     !contributors.every((c) => "login" in c && "contributions" in c)
   ) {
-    console.error(`Unexpected response format`);
+    logger.error(`Unexpected response format`);
     process.exit(1);
   }
 
@@ -98,7 +99,7 @@ async function fetchGitHubData(
   const repoUrlMatch = fullRepoUrl.match(/github\.com\/([\w-]+\/[\w-]+)/);
   if (!repoUrlMatch) {
     console.info(`Invalid GitHub repository URL:', ${fullRepoUrl}`);
-    console.log(`Invalid GitHub repository URL: ${fullRepoUrl}`);
+    logger.info(`Invalid GitHub repository URL: ${fullRepoUrl}`);
     process.exit(1);
   }
   const repoUrl = repoUrlMatch[1];
@@ -120,7 +121,7 @@ async function fetchGitHubData(
     console.info(
       `Failed to fetch data from ${repoUrl}. Status: ${response.statusText}`,
     );
-    console.log(
+    logger.info(
       `Failed to fetch data from ${repoUrl}. Status: ${response.statusText}`,
     );
     process.exit(1);
@@ -134,7 +135,7 @@ export async function getCorrectness(repoUrl: string): Promise<number> {
     const repoUrlMatch = repoUrl.match(/github\.com\/([\w-]+\/[\w-]+)/);
     if (!repoUrlMatch) {
       console.info(`Invalid GitHub repository URL: ${repoUrl}`);
-      console.log(`Invalid GitHub repository URL: ${repoUrl}`);
+      logger.info(`Invalid GitHub repository URL: ${repoUrl}`);
       process.exit(1);
     }
     const repoPath = repoUrlMatch[1];
@@ -167,10 +168,10 @@ export async function getCorrectness(repoUrl: string): Promise<number> {
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.info(`Failed to fetch correctness data: ${error.message}`);
-      console.log(`Failed to fetch correctness data: ${error.message}`);
+      logger.info(`Failed to fetch correctness data: ${error.message}`);
     } else {
       console.info("An unknown error occurred while fetching correctness data");
-      console.log("An unknown error occurred while fetching correctness data");
+      logger.info("An unknown error occurred while fetching correctness data");
     }
     process.exit(1);
   }
@@ -182,7 +183,7 @@ export async function getLicense(url: string): Promise<number> {
   const urlParts = url.split("/");
   const repo = urlParts.pop();
   const owner = urlParts.pop();
-  console.log(`\n Fetching license information for ${owner}/${repo}\n`);
+  logger.info(`\n Fetching license information for ${owner}/${repo}\n`);
   const apiURL = `https://api.github.com/repos/${owner}/${repo}/license`;
   console.info(`Constructed API URL: ${apiURL}`);
 
@@ -195,14 +196,14 @@ export async function getLicense(url: string): Promise<number> {
     });
 
     if (response.status === 200 && response.data.license) {
-      console.log(`License found: ${response.data.license.spdx_id}`);
+      logger.info(`License found: ${response.data.license.spdx_id}`);
       return 1;
     } else {
-      console.log("No license found or license is not recognized.");
+      logger.info("No license found or license is not recognized.");
       return 0;
     }
   } catch (error: any) {
-    console.error(`Failed to fetch license information: ${error.message}`);
+    logger.error(`Failed to fetch license information: ${error.message}`);
     return 0;
   }
 }
@@ -248,7 +249,7 @@ export async function getRampUp(url: string): Promise<number> {
   // Calculate ramp up score based on the README content
   const readmeLines = readme.split("\n").length;
   score += 0.2 * Math.min(readmeLines / 200, 1);
-  console.log(`Calculated score based on README length: ${score}`);
+  logger.info(`Calculated score based on README length: ${score}`);
 
   // Keywords score calculation using regex pattern
   const keywordPattern =
@@ -259,12 +260,12 @@ export async function getRampUp(url: string): Promise<number> {
     ? new Set(matches.map((match) => match.toLowerCase()))
     : new Set();
   score += Math.min(0.16 * uniqueMatches.size, 0.8);
-  console.log(
+  logger.info(
     `Found ${uniqueMatches.size} unique keywords in README. Updated score: ${score}`,
   );
 
   cleanup();
-  console.log(`Temporary directory cleaned up.`);
+  logger.info(`Temporary directory cleaned up.`);
   return score;
 }
 
@@ -291,14 +292,14 @@ async function fetchIssues(owner: string, repo: string): Promise<any[]> {
     console.info(
       `Failed to fetch data from ${repo}. Status: ${response.statusText}`,
     );
-    console.log(
+    logger.info(
       `Failed to fetch data from ${repo}. Status: ${response.statusText}`,
     );
     process.exit(1);
   }
 
   const closedIssues = await response.data;
-  console.log(`Fetched ${closedIssues.length} closed issues.`);
+  logger.info(`Fetched ${closedIssues.length} closed issues.`);
   return closedIssues;
 }
 //Finds the median of the time taken to close an issue
@@ -336,7 +337,7 @@ export async function getResponsive(url: string): Promise<number> {
       score_list.push(diff);
     }
     const median = findMedian(score_list);
-    console.log(`Calculated median time to close an issue: ${median} days.`);
+    logger.info(`Calculated median time to close an issue: ${median} days.`);
 
     if (median < 1) {
       return 1;
@@ -347,7 +348,7 @@ export async function getResponsive(url: string): Promise<number> {
       return 1 - (median - 1) / 6;
     }
   } catch (error) {
-    console.error(`Failed to calculate score of ${repo}. Error: ${error}`);
+    logger.error(`Failed to calculate score of ${repo}. Error: ${error}`);
     process.exit(1);
   }
 }
@@ -364,14 +365,14 @@ async function fetchDependencies(repoUrl: string) {
     headers: { Accept: "application/vnd.github.v3.raw" },
   });
 
-  console.log("response", response);
+  logger.info("response", response);
 
   if (response.status !== 200) {
-    console.error(`Failed to fetch package.json: ${response.statusText}`);
+    logger.error(`Failed to fetch package.json: ${response.statusText}`);
     return [];
   }
   const packageJson = response.data;
-  console.log("packageJson", packageJson);
+  logger.info("packageJson", packageJson);
   return Object.entries({
     ...packageJson.dependencies,
     ...packageJson.devDependencies,
@@ -385,13 +386,13 @@ function isPinnedToMajorMinor(version: string) {
 
 export async function getGoodPinningPractice(repoUrl: string) {
   const dependencies = await fetchDependencies(repoUrl);
-  console.log("dependencies", dependencies);
+  logger.info("dependencies", dependencies);
   if (dependencies.length === 0) return 1.0;
 
   const pinnedDependencies = dependencies.filter((dep) =>
     isPinnedToMajorMinor(dep.version as string),
   );
-  console.log("pinnedDependencies", pinnedDependencies);
+  logger.info("pinnedDependencies", pinnedDependencies);
   return pinnedDependencies.length / dependencies.length;
 }
 
@@ -413,7 +414,7 @@ async function fetchReviewedPullRequests(repoUrl: string) {
       (pr: any) => pr.merged_at != null && pr.review_comments > 0,
     );
   } catch (error: any) {
-    console.error(`Error fetching pull requests: ${error.message}`);
+    logger.error(`Error fetching pull requests: ${error.message}`);
     return [];
   }
 }
@@ -431,7 +432,7 @@ async function calculateTotalContributions(
       });
       totalLinesOfCode += response.data.additions + response.data.deletions;
     } catch (error: any) {
-      console.error(`Error fetching PR details: ${error.message}`);
+      logger.error(`Error fetching PR details: ${error.message}`);
     }
   }
   return totalLinesOfCode;
@@ -458,7 +459,7 @@ async function fetchTotalProjectCommits(repoUrl: string) {
       totalCommits += response.data.length;
       page++;
     } catch (error: any) {
-      console.error(`Error fetching commits: ${error.message}`);
+      logger.error(`Error fetching commits: ${error.message}`);
       break;
     }
   }
@@ -468,14 +469,14 @@ async function fetchTotalProjectCommits(repoUrl: string) {
 
 export async function getPullRequest(repoUrl: string) {
   const reviewedPullRequests = await fetchReviewedPullRequests(repoUrl);
-  console.log("reviewedPullRequests", reviewedPullRequests);
+  logger.info("reviewedPullRequests", reviewedPullRequests);
   const reviewedContributions = await calculateTotalContributions(
     reviewedPullRequests,
     repoUrl,
   );
-  console.log("reviewedContributions", reviewedContributions);
+  logger.info("reviewedContributions", reviewedContributions);
   const totalProjectCommits = await fetchTotalProjectCommits(repoUrl);
-  console.log("totalProjectCommits", totalProjectCommits);
+  logger.info("totalProjectCommits", totalProjectCommits);
 
   if (totalProjectCommits === 0) return 0;
 

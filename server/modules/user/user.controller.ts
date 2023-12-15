@@ -3,6 +3,7 @@ import { IUser, IAuthenticationRequest, UserDB } from "../../models/userModel";
 import { SALT, JWTKey } from "../../helpers/common";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import logger from "../../logger";
 
 export const userAuthentication = async (
   req: Request,
@@ -10,8 +11,8 @@ export const userAuthentication = async (
 ): Promise<void> => {
   try {
     const { User, Secret } = req.body as IAuthenticationRequest;
-    console.log("User", User);
-    console.log("Secret", Secret);
+    logger.info("User", User);
+    logger.info("Secret", Secret);
     if (!User || !Secret) {
       res.status(400).json({
         message:
@@ -21,7 +22,7 @@ export const userAuthentication = async (
     }
 
     const existingUser = await UserDB.findOne({ "User.name": User.name });
-    console.log("existingUser", existingUser);
+    logger.info("existingUser", existingUser);
     if (!existingUser) {
       res.status(401).json({ message: "The user or password is invalid." });
       return;
@@ -31,7 +32,7 @@ export const userAuthentication = async (
       Secret.password,
       existingUser.Secret.password,
     );
-    console.log("isPasswordValid", isPasswordValid);
+    logger.info("isPasswordValid", isPasswordValid);
     if (!isPasswordValid) {
       res.status(401).json({ message: "The user or password is invalid." });
       return;
@@ -50,7 +51,7 @@ export const userAuthentication = async (
 
     res.status(200).json(`bearer ${token}`);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -87,7 +88,7 @@ export const userRegistration = async (
 
     res.status(201).json({ message: "User registered successfully." });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
