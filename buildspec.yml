@@ -11,19 +11,20 @@ phases:
       - npm install
       - npm ci
       - npm run server_install
-      - cd client && yarn
+      - yarn client_install
       #- npm run client_install
       
   pre_build:
     commands:
-      - npm cache clean --force
+      #- npm cache clean --force
       #- ulimit -n 524288
       - echo Build started on `date`
       - echo Compiling the Node.js code...
 
   build:
     commands:
-      - npm run server_build # This command should be defined in your package.json and generate the dist folder
+      - npm run client_build
+      - npm run server_build   
 
   post_build:
     commands:
