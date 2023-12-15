@@ -15,7 +15,7 @@ phases:
   pre_build:
     commands:
       - npm cache clean --force
-      - ulimit -n 524288
+      #- ulimit -n 524288
       - echo Build started on `date`
       - echo Compiling the Node.js code...
 
