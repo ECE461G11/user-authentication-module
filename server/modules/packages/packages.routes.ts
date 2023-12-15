@@ -7,7 +7,7 @@ import {
   getAllPackages,
   getPackageByID,
   updateVersionByID,
-  getPackageByRegEx,
+  getPackagesByRegEx,
 } from "./packages.controller";
 import {
   createPackageValidation,
